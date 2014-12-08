@@ -1,27 +1,41 @@
 package com.mhci.gripandtipforce;
 
+import java.io.IOException;
 import java.util.HashMap;
 
-import com.samsung.samm.common.SObjectStroke;
-import com.samsung.spen.lib.input.SPenEventLibrary;
-import com.samsung.spen.settings.SettingStrokeInfo;
-import com.samsung.spensdk.SCanvasConstants;
-import com.samsung.spensdk.SCanvasView;
-import com.samsung.spensdk.applistener.SPenTouchListener;
+import com.samsung.android.sdk.SsdkUnsupportedException;
+import com.samsung.android.sdk.pen.Spen;
+import com.samsung.android.sdk.pen.SpenSettingEraserInfo;
+import com.samsung.android.sdk.pen.SpenSettingPenInfo;
+import com.samsung.android.sdk.pen.document.SpenNoteDoc;
+import com.samsung.android.sdk.pen.document.SpenPageDoc;
+import com.samsung.android.sdk.pen.engine.SpenSurfaceView;
+import com.samsung.android.sdk.pen.settingui.SpenSettingEraserLayout;
+import com.samsung.android.sdk.pen.settingui.SpenSettingPenLayout;
+import com.samsung.android.sdk.pen.engine.SpenTouchListener;
 
 import android.R.integer;
+import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Debug;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class MainActivity extends Activity {
@@ -30,56 +44,144 @@ public class MainActivity extends Activity {
 	private final static int numCharBoxesInRow = 5; //dont forget to modify these two numbers
 	private final static int numOfWritableCharBoxRows = 1;
 	
-	private final int TOOL_UNKNOWN = 0;
-	private final int TOOL_FINGER = 1;
-	private final int TOOL_PEN = 2;
-	private final int TOOL_PEN_ERASER = 3;
 	private final String [] toolNames = new String[]{"unknown","finger","pen","eraser"};
 	private final static int WritableCharBoxedWidth = 117; //dp on Galaxy 10.1 tab
 	private final static int WritableCharBoxedHeight = 117;
 	
-	private SettingStrokeInfo mStrokeInfoPen;
+	
+	private int mToolType = SpenSurfaceView.TOOL_SPEN;
+	private SpenSettingEraserLayout mEraserSettingView;
+	//private SpenSurfaceView mSpenSurfaceView;
+    //private SpenSettingPenLayout mPenSettingView;
+    
+    private Context mContext = null;
 	private TextView mPressure = null;
 	private boolean isToCleanMode = false;
-	private SCanvasView[][] mCharBoxes = new SCanvasView[numOfWritableCharBoxRows][numCharBoxesInRow];
+	private SpenPageDoc mSpenPageDoc;
+	private SpenSurfaceView[][] mCharBoxes = new SpenSurfaceView[numOfWritableCharBoxRows][numCharBoxesInRow];
 	private int[][] mCharsGroupID = new int[][]{
 			{R.id.char1_group,R.id.char2_group,R.id.char3_group,R.id.char4_group,R.id.char5_group}
 	};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = this;
         initUI();
-        
     }
     
     private void initUI() {
     	setContentView(R.layout.activity_main);
-        for(int i = 0;i < numOfWritableCharBoxRows;i++) {
+        //init SPen
+    	boolean isSpenFeatureEnabled = false;
+    	Spen spenPackage = new Spen();
+        try {
+            spenPackage.initialize(this);
+            if(!spenPackage.isFeatureEnabled(Spen.DEVICE_PEN)) {
+            	Log.d(MainActivity.this.DEBUG_TAG, "s pen is not available,terminating app");
+            	finish();
+            }
+        }  
+        catch (Exception e1) {
+            Toast.makeText(mContext, "Cannot initialize Spen.", Toast.LENGTH_SHORT).show();
+            e1.printStackTrace();
+            finish();
+        }
+    	
+        /*
+        FrameLayout spenViewContainer = (FrameLayout) findViewById(R.id.spenViewContainer);
+        RelativeLayout spenViewLayout = (RelativeLayout) findViewById(R.id.spenViewLayout);
+
+        // Create PenSettingView
+        if (android.os.Build.VERSION.SDK_INT > 19) {
+            mPenSettingView = new SpenSettingPenLayout(mContext, new String(), spenViewLayout);
+        } else {
+            mPenSettingView = new SpenSettingPenLayout(getApplicationContext(), new String(), spenViewLayout);
+        }
+        if (mPenSettingView == null) {
+            Toast.makeText(getApplicationContext(), "Cannot create new PenSettingView.", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+        */
+        
+        RelativeLayout settingView = (RelativeLayout)findViewById(R.id.settingView);
+        // Create EraserSettingView
+        if (android.os.Build.VERSION.SDK_INT > 19) {
+            mEraserSettingView = new SpenSettingEraserLayout(mContext, new String(), settingView);
+        } else {
+            mEraserSettingView = new SpenSettingEraserLayout(getApplicationContext(), new String(), settingView);
+        }
+
+        if (mEraserSettingView == null) {
+            Toast.makeText(mContext, "Cannot create new EraserSettingView.", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+        
+        //Initialize Pen Settings
+        SpenSettingPenInfo penInfo = new SpenSettingPenInfo();
+        penInfo.color = Color.BLACK;
+        penInfo.size = 15;
+        
+        // Initialize Eraser Settings
+        SpenSettingEraserInfo eraserInfo = new SpenSettingEraserInfo();
+        eraserInfo.size = 10;
+        mEraserSettingView.setInfo(eraserInfo);
+        mEraserSettingView.setViewMode(SpenSettingEraserLayout.VIEW_MODE_NORMAL);
+        mEraserSettingView.setVisibility(View.VISIBLE);
+        
+        // Get the dimension of the device screen.
+        Display display = getWindowManager().getDefaultDisplay();
+        Rect rect = new Rect();
+        display.getRectSize(rect);
+		// Create SpenNoteDoc
+        SpenNoteDoc mSpenNoteDoc = null;
+        try {
+            mSpenNoteDoc = new SpenNoteDoc(mContext, WritableCharBoxedWidth, WritableCharBoxedHeight);
+        } catch (IOException e) {
+            Toast.makeText(mContext, "Cannot create new NoteDoc",
+                Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            finish();
+        } catch (Exception e) {
+            e.printStackTrace();
+            finish();
+        }
+		// Add a Page to NoteDoc, get an instance, and set it to the member variable.
+        mSpenPageDoc = mSpenNoteDoc.appendPage();
+        //mSpenPageDoc.setBackgroundColor(0xFFD6E6F5);
+        mSpenPageDoc.clearHistory();
+        //Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.textview_border);
+		//mSpenPageDoc.setVolatileBackgroundImage(image);
+		
+    	for(int i = 0;i < numOfWritableCharBoxRows;i++) {
         	for(int j = 0;j < numCharBoxesInRow;j++) {
-            	mCharBoxes[i][j] = new SCanvasView(this);        
-            	mCharBoxes[i][j].createSCanvasView(WritableCharBoxedWidth, WritableCharBoxedHeight);
-            	//just disable the hover effect in the system setting
-            	mCharBoxes[i][j].setSCanvasHoverPointerStyle(SCanvasConstants.SCANVAS_HOVERPOINTER_STYLE_NONE);
-            	mCharBoxes[i][j].setSPenTouchListener(sPenTouchListener);
-            	mCharBoxes[i][j].setOnClickListener(scanvasOnClickListener);
-            	mCharBoxes[i][j].setBackgroundResource(R.drawable.textview_border);
+            	mCharBoxes[i][j] = new SpenSurfaceView(this);       
+            	mEraserSettingView.setCanvasView(mCharBoxes[i][j]);
+            	
+            	//to disable hover effect, just disable the hover effect in the system setting	
+            	mCharBoxes[i][j].setTouchListener(sPenTouchListener);
+            	mCharBoxes[i][j].setOnClickListener(charBoxOnClickListener);
+            	//currently we disable finger's function. Maybe we could use it as eraser in the future.
+            	mCharBoxes[i][j].setToolTypeAction(SpenSurfaceView.TOOL_FINGER, SpenSurfaceView.ACTION_NONE);
+            	mCharBoxes[i][j].setToolTypeAction(SpenSurfaceView.TOOL_SPEN, SpenSurfaceView.ACTION_STROKE);
+            	mCharBoxes[i][j].setPenSettingInfo(penInfo);
+            	mCharBoxes[i][j].setEraserSettingInfo(eraserInfo);
+            	mCharBoxes[i][j].setPageDoc(mSpenPageDoc, true);
+            	//mCharBoxes[i][j].setBackgroundResource(R.drawable.textview_border);
             	((LinearLayout)findViewById(mCharsGroupID[i][j])).addView(mCharBoxes[i][j], WritableCharBoxedWidth, WritableCharBoxedHeight);
         	}
         }
         mPressure = (TextView)findViewById(R.id.pressureIndicator);
-        int[] btnIDs = new int[]{R.id.penBtn,R.id.eraserBtn,R.id.cleanBtn};
-        
         View.OnClickListener btnOnClickListener = new View.OnClickListener() {
-			private void setCanvasModeWithAllSCanvas(int canvasMode) {
+			private void setSPenToolActionWithAllCanvases(int toolAction) {
 				//due to Homogeneity, we could check first one to know the others
-				if(mCharBoxes[0][0].getCanvasMode() == canvasMode) { 
+				
+				if(mCharBoxes[0][0].getToolTypeAction(SpenSurfaceView.TOOL_SPEN) == toolAction) { 
 					return;
 				}
 				
-				//
 				for(int i = 0;i < numOfWritableCharBoxRows;i++) { 
 					for(int j = 0;j < numCharBoxesInRow;j++) {
-						mCharBoxes[i][j].setCanvasMode(canvasMode);
+						mCharBoxes[i][j].setToolTypeAction(SpenSurfaceView.TOOL_SPEN, toolAction);
 					}
 				}
 				return;
@@ -102,10 +204,10 @@ public class MainActivity extends Activity {
         		btn.setClickable(false); //
         		int id = view.getId();
 				if(id == R.id.penBtn) {
-					setCanvasModeWithAllSCanvas(SCanvasConstants.SCANVAS_MODE_INPUT_PEN);
+					setSPenToolActionWithAllCanvases(SpenSurfaceView.ACTION_STROKE);
 				}
 				else if(id == R.id.eraserBtn){
-					setCanvasModeWithAllSCanvas(SCanvasConstants.SCANVAS_MODE_INPUT_ERASER);
+					setSPenToolActionWithAllCanvases(SpenSurfaceView.ACTION_ERASER);
 				}
 				else if(id == R.id.cleanBtn) {
 					isToCleanMode = !isToCleanMode;
@@ -121,58 +223,24 @@ public class MainActivity extends Activity {
 			}
 		};
 		
+		int[] btnIDs = new int[]{R.id.penBtn,R.id.eraserBtn,R.id.cleanBtn};
         for(int id : btnIDs) {
         	Button button = (Button)findViewById(id);
         	button.setOnClickListener(btnOnClickListener);
         }
         
-        
-        //seems that we need Pen SDK not only S Pen SDK
-        mStrokeInfoPen = new SettingStrokeInfo();
-		mStrokeInfoPen.setStrokeStyle(SObjectStroke.SAMM_STROKE_STYLE_PENCIL);
-		mStrokeInfoPen.setStrokeWidth(15);
-		
-		mCharBoxes[0][0].setSettingViewStrokeInfo(mStrokeInfoPen);
-        
     }
     
-    private SPenTouchListener sPenTouchListener = new SPenTouchListener() {
-		
-    	//returning false means it will dispatch event to SCanvasView for drawing
+    private SpenTouchListener sPenTouchListener = new SpenTouchListener() {
 		@Override
-		public boolean onTouchPenEraser(View view, MotionEvent event) {
+		public boolean onTouch(View v, MotionEvent event) {
 			// TODO Auto-generated method stub
-			return false;
-		}
-		
-		@Override
-		public boolean onTouchPen(View view, MotionEvent event) {
-			// TODO Auto-generated method stub
-			// TODO compute sampling rate here
 			mPressure.setText(event.getPressure() + "");
 			return false;
 		}
-		
-		@Override
-		public boolean onTouchFinger(View arg0, MotionEvent arg1) {
-			// TODO Auto-generated method stub
-			return true; // disable finger drawing and do palm rejection
-		}
-		
-		@Override
-		public void onTouchButtonUp(View arg0, MotionEvent arg1) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-		@Override
-		public void onTouchButtonDown(View arg0, MotionEvent arg1) {
-			// TODO Auto-generated method stub
-			
-		}
 	};
 	
-	private View.OnClickListener scanvasOnClickListener = new View.OnClickListener() {
+	private View.OnClickListener charBoxOnClickListener = new View.OnClickListener() {
 		
 		@Override
 		public void onClick(View v) {
@@ -181,18 +249,36 @@ public class MainActivity extends Activity {
 				int canvasID = v.getId();
 				try {
 					//ask user whether he want to delete
-					SCanvasView sCanvasView = (SCanvasView)v;
+					SpenSurfaceView penCanvasView = (SpenSurfaceView)v;
+					
 				}
 				catch(Exception e) {
 					Log.d(MainActivity.this.DEBUG_TAG, e.getMessage());
 				}
-				
-			
-				
 			}
 			
 		}
 	};
+	
+	protected void onDestroy() {
+		super.onDestroy();
+		/*
+        if (mPenSettingView != null) {
+            mPenSettingView.close();
+        }
+        if (mEraserSettingView != null) {
+            mEraserSettingView.close();
+        }
+        */
+		for(int i = 0;i < numOfWritableCharBoxRows;i++) {
+			for(int j = 0;j < numCharBoxesInRow;j++) {
+				if(mCharBoxes[i][j] != null) {
+					mCharBoxes[i][j].close();
+					mCharBoxes[i][j] = null;
+				}
+			}
+		}
+	}
 	
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
