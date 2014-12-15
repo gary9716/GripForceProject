@@ -88,8 +88,8 @@
 
         <RelativeLayout
             android:id="@+id/spenViewLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
+            android:layout_width="@dimen/char_box_width"
+            android:layout_height="@dimen/char_box_height" >
         </RelativeLayout>
     </FrameLayout>
 

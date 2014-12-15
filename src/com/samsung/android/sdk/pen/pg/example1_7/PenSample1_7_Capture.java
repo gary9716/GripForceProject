@@ -120,6 +120,7 @@ public class PenSample1_7_Capture extends Activity {
             finish();
         }
         spenViewLayout.addView(mSpenSurfaceView);
+        
         mPenSettingView.setCanvasView(mSpenSurfaceView);
         mEraserSettingView.setCanvasView(mSpenSurfaceView);
 

@@ -5,8 +5,9 @@
     android:versionName="1.0" >
 	
     <uses-sdk
-        android:minSdkVersion="16"
-        android:targetSdkVersion="16" />
+        android:minSdkVersion="14"
+        android:targetSdkVersion="19" />
+    
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 	<uses-permission android:name="com.samsung.android.providers.context.permission.WRITE_USE_APP_FEATURE_SURVEY" />
 	
@@ -21,10 +22,21 @@
             android:screenOrientation="landscape" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-			
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <activity android:name="com.samsung.android.sdk.pen.pg.example1_1.PenSample1_1_HelloPen"
+            android:label="PenSample1_1_HelloPen"
+            android:configChanges="locale|keyboardHidden|orientation|screenSize" android:windowSoftInputMode="adjustResize">
+        </activity>
+        
+        <activity android:name="com.samsung.android.sdk.pen.pg.example1_7.PenSample1_7_Capture"
+            android:label="PenSample1_7_Capture"
+            android:configChanges="locale|keyboardHidden|orientation|screenSize" android:windowSoftInputMode="adjustResize">
+        </activity>
+        
+        
     </application>
 
 </manifest>

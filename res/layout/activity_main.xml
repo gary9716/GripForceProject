@@ -68,7 +68,7 @@
             android:orientation="vertical" >
 
             <TextView
-                android:id="@+id/TextView01"
+                android:id="@+id/exChar2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/char_box_bottom_margin"
@@ -91,7 +91,7 @@
             android:orientation="vertical" >
 
             <TextView
-                android:id="@+id/TextView02"
+                android:id="@+id/exChar3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/char_box_bottom_margin"
@@ -114,7 +114,7 @@
             android:orientation="vertical" >
 
             <TextView
-                android:id="@+id/TextView03"
+                android:id="@+id/exChar4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/char_box_bottom_margin"
@@ -137,7 +137,7 @@
             android:orientation="vertical" >
 
             <TextView
-                android:id="@+id/TextView04"
+                android:id="@+id/exChar5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/char_box_bottom_margin"
