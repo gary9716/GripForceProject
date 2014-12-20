@@ -44,7 +44,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -85,13 +84,16 @@ public class MainActivity extends Activity {
 	
 	private SpenSurfaceView currentlySelectedSurfaceView = null;
 	
-	private int[][] mCharsGroupID = new int[][]{
+	private int[][] mWritableCharsContainerID = new int[][]{
 			{R.id.WritableCharContainer1, 
 		     R.id.WritableCharContainer2, 
 		     R.id.WritableCharContainer3, 
 		     R.id.WritableCharContainer4, 
 		     R.id.WritableCharContainer5}
 	};
+	
+	private RelativeLayout[][] spenViewsContainer = new RelativeLayout[numOfWritableCharBoxRows][numCharBoxesInRow];
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,13 +121,20 @@ public class MainActivity extends Activity {
         }
     	
         RelativeLayout viewsContainer = (RelativeLayout) findViewById(R.id.views_container);
-        RelativeLayout settingView = (RelativeLayout) findViewById(R.id.settingView);
+        for(int i = 0;i < numOfWritableCharBoxRows;i++) {
+        	for(int j = 0;j < numCharBoxesInRow;j++) {
+        		spenViewsContainer[i][j] = (RelativeLayout) findViewById(mWritableCharsContainerID[i][j]);
+        	}
+        }
         
         // Create PenSettingView
+        //I think relative layout that contain spenView should be use for SpenSettingLayout Initialization
+        //temporary I set first one as its control target, later would be adjusted in OnClickListener of spenView.
+        /*
         if (android.os.Build.VERSION.SDK_INT > 19) {
-            mPenSettingView = new SpenSettingPenLayout(mContext, new String(), settingView);
+            mPenSettingView = new SpenSettingPenLayout(mContext, new String(), spenViewsContainer[0][0]);
         } else {
-            mPenSettingView = new SpenSettingPenLayout(getApplicationContext(), new String(), settingView);
+            mPenSettingView = new SpenSettingPenLayout(getApplicationContext(), new String(), spenViewsContainer[0][0]);
         }
         if (mPenSettingView == null) {
             Toast.makeText(mContext, "Cannot create new PenSettingView.", Toast.LENGTH_SHORT).show();
@@ -134,9 +143,9 @@ public class MainActivity extends Activity {
         
         // Create EraserSettingView
         if (android.os.Build.VERSION.SDK_INT > 19) {
-            mEraserSettingView = new SpenSettingEraserLayout(mContext, new String(), settingView);
+            mEraserSettingView = new SpenSettingEraserLayout(mContext, new String(), spenViewsContainer[0][0]);
         } else {
-            mEraserSettingView = new SpenSettingEraserLayout(getApplicationContext(), new String(), settingView);
+            mEraserSettingView = new SpenSettingEraserLayout(getApplicationContext(), new String(), spenViewsContainer[0][0]);
         }
         if (mEraserSettingView == null) {
             Toast.makeText(mContext, "Cannot create new EraserSettingView.", Toast.LENGTH_SHORT).show();
@@ -145,8 +154,44 @@ public class MainActivity extends Activity {
         
         viewsContainer.addView(mPenSettingView);
         viewsContainer.addView(mEraserSettingView);
-
+		
+        */
+        
         initSettingInfo();
+        
+        //mPenSettingView.setInfo(penInfo);
+        //mEraserSettingView.setInfo(eraserInfo);
+        
+        for(int i = 0;i < numOfWritableCharBoxRows;i++) {
+        	for(int j = 0;j < numCharBoxesInRow;j++) {
+        		
+        		// Add a Page to NoteDoc, get an instance, and set it to the member variable.
+        		
+        		//mSpenPageDoc[i][j] = mSpenNoteDoc.appendPage();
+        		//mSpenPageDoc[i][j].setBackgroundColor(0xFFD6E6F5);
+                //mSpenPageDoc[i][j].clearHistory();
+        		//mSpenPageDoc[i][j].setHistoryListener(mHistoryListener);
+        		
+        		mCharBoxes[i][j] = new SpenSurfaceView(this);   
+            	
+        		viewModelMap.put(mCharBoxes[i][j], mSpenPageDoc[i][j]);
+        		
+            	//mPenSettingView.setCanvasView(mCharBoxes[i][j]);
+            	//mEraserSettingView.setCanvasView(mCharBoxes[i][j]);
+            	
+            	//to disable hover effect, just disable the hover effect in the system setting	
+            	mCharBoxes[i][j].setColorPickerListener(mColorPickerListener);
+            	mCharBoxes[i][j].setTouchListener(sPenTouchListener);
+            	mCharBoxes[i][j].setOnClickListener(surfaceViewOnClickListener);
+            	
+            	//currently we disable finger's function. Maybe we could use it as eraser in the future.
+            	mCharBoxes[i][j].setToolTypeAction(SpenSurfaceView.TOOL_FINGER, SpenSurfaceView.ACTION_NONE);
+            	mCharBoxes[i][j].setToolTypeAction(SpenSurfaceView.TOOL_SPEN, SpenSurfaceView.ACTION_STROKE);
+            	mCharBoxes[i][j].setPenSettingInfo(penInfo);
+            	mCharBoxes[i][j].setEraserSettingInfo(eraserInfo);
+            	spenViewsContainer[i][j].addView(mCharBoxes[i][j]);
+        	}
+        }
         
         // Get the dimension of the device screen.
         Display display = getWindowManager().getDefaultDisplay();
@@ -165,48 +210,28 @@ public class MainActivity extends Activity {
             finish();
         }
         
-//        mSpenPageDoc[0][0] = mSpenNoteDoc.appendPage();
-//		mSpenPageDoc[0][0].setBackgroundColor(0xFFD6E6F5);
-//        mSpenPageDoc[0][0].clearHistory();
-//		mSpenPageDoc[0][0].setHistoryListener(mHistoryListener);
-//        
+//        SpenPageDoc docForTest = mSpenNoteDoc.appendPage();
+//        docForTest.clearHistory();
+//    	SpenSurfaceView viewForTest = new SpenSurfaceView(this);
+//    	viewsContainer.addView(viewForTest);
+//    	viewForTest.setPageDoc(docForTest, true);
+//    	
+    	
+        mSpenPageDoc[0][0] = mSpenNoteDoc.appendPage();
+		mSpenPageDoc[0][0].setBackgroundColor(0xFFD6E6F5);
+        mSpenPageDoc[0][0].clearHistory();
+		mSpenPageDoc[0][0].setHistoryListener(mHistoryListener);
         
     	for(int i = 0;i < numOfWritableCharBoxRows;i++) {
-        	for(int j = 0;j < numCharBoxesInRow;j++) {
-        		
-        		// Add a Page to NoteDoc, get an instance, and set it to the member variable.
-        		
-        		mSpenPageDoc[i][j] = mSpenNoteDoc.appendPage();
-        		mSpenPageDoc[i][j].setBackgroundColor(0xFFD6E6F5);
-                mSpenPageDoc[i][j].clearHistory();
-        		mSpenPageDoc[i][j].setHistoryListener(mHistoryListener);
-        			
-        		mCharBoxes[i][j] = new SpenSurfaceView(this);   
-            	
-        		viewModelMap.put(mCharBoxes[i][j], mSpenPageDoc[i][j]);
-        		
-            	mPenSettingView.setCanvasView(mCharBoxes[i][j]);
-            	mEraserSettingView.setCanvasView(mCharBoxes[i][j]);
-            	
-            	//to disable hover effect, just disable the hover effect in the system setting	
-            	mCharBoxes[i][j].setTouchListener(sPenTouchListener);
-            	mCharBoxes[i][j].setColorPickerListener(mColorPickerListener);
-            	mCharBoxes[i][j].setOnClickListener(surfaceViewOnClickListener);
-            	
-            	//currently we disable finger's function. Maybe we could use it as eraser in the future.
-            	mCharBoxes[i][j].setToolTypeAction(SpenSurfaceView.TOOL_FINGER, SpenSurfaceView.ACTION_NONE);
-            	mCharBoxes[i][j].setToolTypeAction(SpenSurfaceView.TOOL_SPEN, SpenSurfaceView.ACTION_STROKE);
-            	mCharBoxes[i][j].setPenSettingInfo(penInfo);
-            	mCharBoxes[i][j].setEraserSettingInfo(eraserInfo);
-            	mCharBoxes[i][j].setPageDoc(mSpenPageDoc[i][j], true);
-            	((LinearLayout)findViewById(R.id.char1_group)).addView(mCharBoxes[i][j]);
-            	
-            	
-        	}
-        }
-        mPressure = (TextView)findViewById(R.id.pressureIndicator);
+    		for(int j = 0;j< numCharBoxesInRow;j++) {
+    			SpenPageDoc docToSet = mSpenPageDoc[0][0];
+    			mCharBoxes[i][j].setPageDoc(docToSet, true);
+    		}
+    	}
+    	
+    	mPressure = (TextView)findViewById(R.id.pressureIndicator);
         
-        
+        /*
         mEraserSettingView.setEraserListener(mEraserListener);
         
         // Set a button
@@ -228,9 +253,9 @@ public class MainActivity extends Activity {
 
         mCaptureBtn = (ImageView) findViewById(R.id.captureBtn);
         mCaptureBtn.setOnClickListener(mCaptureBtnClickListener);
-
+		
         selectButton(mPenBtn);
-        
+        */
         
         /*
         View.OnClickListener btnOnClickListener = new View.OnClickListener() {
@@ -291,7 +316,11 @@ public class MainActivity extends Activity {
         	button.setOnClickListener(btnOnClickListener);
         }
         */
-        
+    	if(isSpenFeatureEnabled == false) {
+            Toast.makeText(mContext,
+                "Device does not support Spen.",
+                Toast.LENGTH_SHORT).show();
+        }
         
     }
     
@@ -326,14 +355,12 @@ public class MainActivity extends Activity {
         penInfo = new SpenSettingPenInfo();
         penInfo.color = Color.BLACK;
         penInfo.size = 15;
-        //penInfo.name = SpenPenManager.SPEN_INK_PEN;
-        mPenSettingView.setInfo(penInfo);
-
+        penInfo.name = SpenPenManager.SPEN_INK_PEN;
+        
         // Initialize Eraser settings
         eraserInfo = new SpenSettingEraserInfo();
         eraserInfo.size = 30;
-        mEraserSettingView.setInfo(eraserInfo);
-        
+       
     }
 	
 	private void setAllSurfaceViewWith(int toolType, int action_type) {
@@ -398,7 +425,7 @@ public class MainActivity extends Activity {
         @Override
         public void onClick(View v) {
             closeSettingView();
-            //captureSpenSurfaceView();
+            captureSpenSurfaceView();
         }
     };
 
@@ -492,9 +519,10 @@ public class MainActivity extends Activity {
         mRedoBtn.setEnabled(clickable);
         mCaptureBtn.setEnabled(clickable);
     }
-	/*
+	
 	private void captureSpenSurfaceView() {
-        // Set save directory for a captured image.
+        /*
+		// Set save directory for a captured image.
         String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/SPen/images";
         File fileCacheItem = new File(filePath);
         if (!fileCacheItem.exists()) {
@@ -530,8 +558,9 @@ public class MainActivity extends Activity {
             }
         }
         imgBitmap.recycle();
+        */
     }
-	*/
+	
 	private MediaScannerConnection msConn = null;
 	private void scanImage(final String imageFileName) {
         msConn = new MediaScannerConnection(mContext, new MediaScannerConnectionClient() {

@@ -50,15 +50,17 @@ public class PenSample1_1_HelloPen extends Activity {
         }
 
 		// Create Spen View
-        mSpenSurfaceView =
-            (SpenSurfaceView) findViewById(R.id.spenSurfaceViewForTest);
+        RelativeLayout spenViewLayout =
+            (RelativeLayout) findViewById(R.id.spenViewLayout);
+        mSpenSurfaceView = new SpenSurfaceView(mContext);
         if (mSpenSurfaceView == null) {
             Toast.makeText(mContext, "Cannot create new SpenView.",
                 Toast.LENGTH_SHORT).show();
             finish();
         }
-        
-        // Get the dimension of the device screen.
+        spenViewLayout.addView(mSpenSurfaceView);
+
+		// Get the dimension of the device screen.
         Display display = getWindowManager().getDefaultDisplay();
         Rect rect = new Rect();
         display.getRectSize(rect);
