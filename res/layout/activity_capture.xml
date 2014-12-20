@@ -8,7 +8,8 @@
     <LinearLayout
         android:id="@+id/tool_menu"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
 
         <ImageView
             android:id="@+id/penBtn"
@@ -29,56 +30,27 @@
             android:background="@drawable/selector_tool_bg"
             android:contentDescription="@string/description"
             android:src="@drawable/selector_eraser" />
-
+		
         <ImageView
-            android:id="@+id/undoBtn"
+            android:id="@+id/cleanBtn"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_margin="1dip"
             android:layout_weight="1"
             android:background="@drawable/selector_tool_bg"
             android:contentDescription="@string/description"
-            android:src="@drawable/selector_undo" />
-
+            android:src="@drawable/tool_clean_brush" />
+        
         <ImageView
-            android:id="@+id/redoBtn"
+            android:id="@+id/saveBtn"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_margin="1dip"
             android:layout_weight="1"
             android:background="@drawable/selector_tool_bg"
             android:contentDescription="@string/description"
-            android:src="@drawable/selector_redo" />
-
-        <ImageView
-            android:id="@+id/bgImgBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_image" />
-
-        <ImageView
-            android:id="@+id/playBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_play" />
-
-        <ImageView
-            android:id="@+id/captureBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_capture" />
+            android:src="@drawable/selector_save" />
+        
     </LinearLayout>
 
     <RelativeLayout
