@@ -189,6 +189,7 @@ public class PenSample1_7_Capture extends Activity {
 			}
 			else if(id == R.id.cleanBtn) {
 				isToCleanMode = true;
+				setSPenToolActionWithAllCanvases(SpenSurfaceView.ACTION_STROKE);
 				selectButton(mCleanBtn);
 			}
 			

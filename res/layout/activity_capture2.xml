@@ -1,0 +1,230 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".PenSample1_7_Capture" >
+
+    <LinearLayout
+        android:id="@+id/tool_menu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <ImageView
+            android:id="@+id/penBtn"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_margin="1dip"
+            android:layout_weight="1"
+            android:background="@drawable/selector_tool_bg"
+            android:contentDescription="@string/description"
+            android:src="@drawable/selector_pen" />
+
+        <ImageView
+            android:id="@+id/eraserBtn"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_margin="1dip"
+            android:layout_weight="1"
+            android:background="@drawable/selector_tool_bg"
+            android:contentDescription="@string/description"
+            android:src="@drawable/selector_eraser" />
+		
+        <ImageView
+            android:id="@+id/cleanBtn"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_margin="1dip"
+            android:layout_weight="1"
+            android:background="@drawable/selector_tool_bg"
+            android:contentDescription="@string/description"
+            android:src="@drawable/tool_clean_brush" />
+        
+        <ImageView
+            android:id="@+id/saveBtn"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_margin="1dip"
+            android:layout_weight="1"
+            android:background="@drawable/selector_tool_bg"
+            android:contentDescription="@string/description"
+            android:src="@drawable/selector_save" />
+        
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/debug_layer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="visible" >
+
+        <TextView
+            android:id="@+id/pressureIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginBottom="15dp"
+            android:layout_marginLeft="126dp"
+            android:layout_marginTop="15dp"
+            android:text="motion info"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/spenViewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <LinearLayout
+            android:id="@+id/ex_chars_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:id="@+id/char1_group"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/exChar1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/char_box_bottom_margin"
+                    android:layout_marginRight="@dimen/char_box_right_margin"
+                    android:background="@drawable/textview_border"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:height="@dimen/char_box_height"
+                    android:maxHeight="@dimen/char_box_height"
+                    android:maxWidth="@dimen/char_box_width"
+                    android:text="大"
+                    android:textSize="50sp"
+                    android:width="@dimen/char_box_width" />
+
+                <RelativeLayout
+                    android:id="@+id/WritableCharContainer1"
+                    android:layout_width="@dimen/char_box_width"
+                    android:layout_height="@dimen/char_box_height" >
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/char2_group"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/exChar2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/char_box_bottom_margin"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                    android:background="@drawable/textview_border"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:height="@dimen/char_box_height"
+                    android:maxHeight="@dimen/char_box_height"
+                    android:maxWidth="@dimen/char_box_width"
+                    android:text="大"
+                    android:textSize="50sp"
+                    android:width="@dimen/char_box_width" />
+
+                <RelativeLayout
+                    android:id="@+id/WritableCharContainer2"
+                    android:layout_width="@dimen/char_box_width"
+                    android:layout_height="@dimen/char_box_height" >
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/char3_group"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/exChar3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/char_box_bottom_margin"
+                    android:layout_marginRight="@dimen/char_box_right_margin"
+                    android:background="@drawable/textview_border"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:height="@dimen/char_box_height"
+                    android:maxHeight="@dimen/char_box_height"
+                    android:maxWidth="@dimen/char_box_width"
+                    android:text="大"
+                    android:textSize="50sp"
+                    android:width="@dimen/char_box_width" />
+
+                <RelativeLayout
+                    android:id="@+id/WritableCharContainer3"
+                    android:layout_width="@dimen/char_box_width"
+                    android:layout_height="@dimen/char_box_height" >
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/char4_group"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/exChar4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/char_box_bottom_margin"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                    android:background="@drawable/textview_border"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:height="@dimen/char_box_height"
+                    android:maxHeight="@dimen/char_box_height"
+                    android:maxWidth="@dimen/char_box_width"
+                    android:text="大"
+                    android:textSize="50sp"
+                    android:width="@dimen/char_box_width" />
+
+                <RelativeLayout
+                    android:id="@+id/WritableCharContainer4"
+                    android:layout_width="@dimen/char_box_width"
+                    android:layout_height="@dimen/char_box_height" >
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/char5_group"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/exChar5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                    android:background="@drawable/textview_border"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:height="@dimen/char_box_height"
+                    android:maxHeight="@dimen/char_box_height"
+                    android:maxWidth="@dimen/char_box_width"
+                    android:text="大"
+                    android:textSize="50sp"
+                    android:width="@dimen/char_box_width" />
+
+                <RelativeLayout
+                    android:id="@+id/WritableCharContainer5"
+                    android:layout_width="@dimen/char_box_width"
+                    android:layout_height="@dimen/char_box_height" >
+                </RelativeLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</LinearLayout>
