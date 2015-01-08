@@ -1,7 +1,6 @@
 package com.samsung.android.sdk.pen.pg.example1_7;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 
 import android.app.Activity;
@@ -12,7 +11,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
@@ -42,9 +40,6 @@ public class PenSample1_7_Capture extends Activity {
 	private String DEBUG_TAG = PenSample1_7_Capture.class.getName().toString();
 
 	private Context mContext = null;
-	private SpenNoteDoc mSpenNoteDoc;
-	private SpenPageDoc mSpenPageDoc;
-	private SpenSurfaceView mSpenSurfaceView;
 	private SpenSettingPenLayout mPenSettingView;
 	private SpenSettingEraserLayout mEraserSettingView;
 
@@ -57,7 +52,7 @@ public class PenSample1_7_Capture extends Activity {
 
 	private int mToolType = SpenSurfaceView.TOOL_SPEN;
 
-	private final static int numCharBoxesInRow = 5; //dont forget to modify these two numbers
+	private final static int numCharBoxesInRow = 4; //dont forget to modify these two numbers
 	private final static int numOfWritableCharBoxRows = 1;
 	private boolean isToCleanMode = false;
 
@@ -70,7 +65,6 @@ public class PenSample1_7_Capture extends Activity {
 	};
 	
 	private SpenSurfaceView[][] mCharBoxes = new SpenSurfaceView[numOfWritableCharBoxRows][numCharBoxesInRow];
-	private SpenSurfaceView currentlySelectedSurfaceView = null;
 
 	private SpenSettingPenInfo penInfo;
 	private SpenSettingEraserInfo eraserInfo;
@@ -87,22 +81,24 @@ public class PenSample1_7_Capture extends Activity {
 
 	}
 
-	private void cleanCurrentlySelectedView() {
-		if(currentlySelectedSurfaceView != null) {
-			SpenPageDoc model = viewModelMap.get(currentlySelectedSurfaceView);
-			model.removeAllObject();
-			currentlySelectedSurfaceView.update();
-		}
-		return;
-	}
-
 	private class customizedLongPressedListener implements SpenLongPressListener {
+		private SpenSurfaceView currentlySelectedSurfaceView = null;
+
 		private SpenSurfaceView bindedSurfaceView = null;
 
 		public customizedLongPressedListener(SpenSurfaceView surfaceView) {
 			bindedSurfaceView = surfaceView;
 		}
-
+		
+		private void cleanCurrentlySelectedView() {
+			if(currentlySelectedSurfaceView != null) {
+				SpenPageDoc model = viewModelMap.get(currentlySelectedSurfaceView);
+				model.removeAllObject();
+				currentlySelectedSurfaceView.update();
+			}
+			return;
+		}
+		
 		@Override
 		public void onLongPressed(MotionEvent arg0) {
 			// TODO Auto-generated method stub
@@ -135,14 +131,13 @@ public class PenSample1_7_Capture extends Activity {
 
 	}
 
-	private Date mDate = new Date();
 	private int totalChars = 0;
 
 	private SpenTouchListener sPenTouchListener = new SpenTouchListener() {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			// TODO Auto-generated method stub
-			mPenTipInfo.setText("p:" + event.getPressure() + ",x:" + event.getX() + ",y:" + event.getY() + ",ts:" + mDate.getTime());
+			mPenTipInfo.setText("p:" + event.getPressure() + ",x:" + event.getX() + ",y:" + event.getY() + ",ts:" + System.currentTimeMillis());
 			return false;
 		}
 	};
@@ -186,6 +181,7 @@ public class PenSample1_7_Capture extends Activity {
 		}
 	};
 
+	private SpenNoteDoc mSpenNoteDoc;
 	private SpenPageDoc[][] mSpenPageDocs = new SpenPageDoc[numOfWritableCharBoxRows][numCharBoxesInRow];
 	private HashMap<SpenSurfaceView, SpenPageDoc> viewModelMap = new HashMap<SpenSurfaceView, SpenPageDoc>(numCharBoxesInRow * numOfWritableCharBoxRows);
 	
@@ -222,7 +218,6 @@ public class PenSample1_7_Capture extends Activity {
 		initSettingInfo2();
 
 		mPenTipInfo = (TextView)findViewById(R.id.penTipInfo);
-		//RelativeLayout spenViewContainer = (RelativeLayout) findViewById(R.id.spenViewContainer);
 		
 		for(int i = 0;i < numOfWritableCharBoxRows;i++) {
 			for(int j = 0;j < numCharBoxesInRow;j++) {
@@ -245,7 +240,6 @@ public class PenSample1_7_Capture extends Activity {
 				//viewIndexMap.put(mCharBoxes[i][j].getId(),indexPair);
 			}
 		}
-		
 		
 		// Get the dimension of the device screen.
 		Display display = getWindowManager().getDefaultDisplay();
@@ -282,7 +276,7 @@ public class PenSample1_7_Capture extends Activity {
 				SpenPageDoc docToSet = mSpenPageDocs[i][j];
 				
 				mCharBoxes[i][j].setPageDoc(docToSet, true);
-				//viewModelMap.put(mCharBoxes[i][j], mSpenPageDocs[i][j]);
+				viewModelMap.put(mCharBoxes[i][j], mSpenPageDocs[i][j]);
 
 			}
 		}
@@ -301,7 +295,6 @@ public class PenSample1_7_Capture extends Activity {
 
 		if (isSpenFeatureEnabled == false) {
 			mToolType = SpenSurfaceView.TOOL_FINGER;
-			mSpenSurfaceView.setToolTypeAction(mToolType, SpenSurfaceView.ACTION_STROKE);
 			Toast.makeText(mContext, "Device does not support Spen. \n You can draw stroke by finger",
 					Toast.LENGTH_SHORT).show();
 		}
@@ -361,22 +354,11 @@ public class PenSample1_7_Capture extends Activity {
 	protected void onDestroy() {
 		super.onDestroy();
 
-		if (mSpenNoteDoc != null && mSpenPageDoc.isRecording()) {
-			mSpenPageDoc.stopRecord();
-		}
-
 		if (mPenSettingView != null) {
 			mPenSettingView.close();
 		}
 		if (mEraserSettingView != null) {
 			mEraserSettingView.close();
-		}
-		if (mSpenSurfaceView != null) {
-			if (mSpenSurfaceView.getReplayState() == SpenSurfaceView.REPLAY_STATE_PLAYING) {
-				mSpenSurfaceView.stopReplay();
-			}
-			mSpenSurfaceView.close();
-			mSpenSurfaceView = null;
 		}
 
 		if (mSpenNoteDoc != null) {
