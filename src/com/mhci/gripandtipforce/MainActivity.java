@@ -229,7 +229,7 @@ public class MainActivity extends Activity {
     		}
     	}
     	
-    	mPressure = (TextView)findViewById(R.id.pressureIndicator);
+    	mPressure = (TextView)findViewById(R.id.penTipInfo);
         
         /*
         mEraserSettingView.setEraserListener(mEraserListener);

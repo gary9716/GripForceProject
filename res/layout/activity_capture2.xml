@@ -54,25 +54,6 @@
     </LinearLayout>
 
     <RelativeLayout
-        android:id="@+id/debug_layer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="visible" >
-
-        <TextView
-            android:id="@+id/pressureIndicator"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true"
-            android:layout_marginBottom="15dp"
-            android:layout_marginLeft="126dp"
-            android:layout_marginTop="15dp"
-            android:text="motion info"
-            android:textSize="20sp" />
-    </RelativeLayout>
-
-    <RelativeLayout
         android:id="@+id/spenViewContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
@@ -81,8 +62,8 @@
             android:id="@+id/ex_chars_group"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
+            android:layout_marginLeft="130dp"
             android:orientation="vertical" >
 
             <LinearLayout
@@ -224,6 +205,26 @@
                 </RelativeLayout>
             </LinearLayout>
         </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/debug_layer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:visibility="visible" >
+
+            <TextView
+                android:id="@+id/penTipInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_marginBottom="15dp"
+                android:layout_marginLeft="126dp"
+                android:layout_marginTop="15dp"
+                android:text="penTipData"
+                android:textSize="20sp" />
+        </RelativeLayout>
 
     </RelativeLayout>
 

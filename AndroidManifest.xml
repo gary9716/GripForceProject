@@ -31,11 +31,11 @@
         
         <activity android:name="com.samsung.android.sdk.pen.pg.example1_7.PenSample1_7_Capture"
             android:label="PenSample1_7_Capture"
-            android:configChanges="locale|keyboardHidden|orientation|screenSize" 
-            android:screenOrientation="landscape"
+            android:configChanges="locale|keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize">
         	
-        	<intent-filter>
+        		<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
