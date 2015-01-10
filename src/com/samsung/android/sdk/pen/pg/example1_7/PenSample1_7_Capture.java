@@ -1,6 +1,7 @@
 package com.samsung.android.sdk.pen.pg.example1_7;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.HashMap;
 
 import android.app.Activity;
@@ -33,6 +34,7 @@ import com.samsung.android.sdk.pen.pg.tool.SDKUtils;
 import com.samsung.android.sdk.pen.settingui.SpenSettingEraserLayout;
 import com.samsung.android.sdk.pen.settingui.SpenSettingPenLayout;
 import com.mhci.gripandtipforce.ImgFileManager;
+import com.mhci.gripandtipforce.LogFileManager;
 import com.mhci.gripandtipforce.R;
 
 public class PenSample1_7_Capture extends Activity {
@@ -121,6 +123,8 @@ public class PenSample1_7_Capture extends Activity {
 						cleanCurrentlySelectedView();
 					}
 				});
+				
+				builder.setNegativeButton("cancel", null);
 
 				// 3. Get the AlertDialog from create()
 				(builder.create()).show();
@@ -137,7 +141,7 @@ public class PenSample1_7_Capture extends Activity {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			// TODO Auto-generated method stub
-			mPenTipInfo.setText("p:" + event.getPressure() + ",x:" + event.getX() + ",y:" + event.getY() + ",ts:" + System.currentTimeMillis());
+			mPenTipInfo.setText("p:" + event.getPressure() + ",x:" + event.getX() + ",y:" + event.getY() + ",ts:" + (System.currentTimeMillis() - fixedDateInMillis));
 			return false;
 		}
 	};
@@ -188,16 +192,22 @@ public class PenSample1_7_Capture extends Activity {
 	//private HashMap<Integer,Pair<Integer, Integer>> viewIndexMap = new HashMap<Integer,Pair<Integer, Integer>>(numCharBoxesInRow * numOfWritableCharBoxRows);
 	
 	private ImgFileManager imgFileManager = null;
-	
+	private LogFileManager logFileManager = null;
 	private int charIndex;
+	
+	private long fixedDateInMillis = 0;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(2015, Calendar.JANUARY, 1);
+		fixedDateInMillis = calendar.getTimeInMillis();
+		
 		setContentView(R.layout.activity_capture2);
 		mContext = this;
-		imgFileManager = new ImgFileManager(mContext);
-		
+		imgFileManager = ImgFileManager.getInstance(this);
+		logFileManager = logFileManager.getInstance(this, numCharBoxesInRow, numOfWritableCharBoxRows);
 		charIndex = 0;
 		
 		// Initialize Spen
@@ -319,13 +329,6 @@ public class PenSample1_7_Capture extends Activity {
 		
 		
 	}
-	
-	private final OnClickListener mCaptureBtnClickListener = new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			
-		}
-	};
 
 	private void selectButton(View v) {
 		// Enable or disable the button according to the current mode.
@@ -346,8 +349,7 @@ public class PenSample1_7_Capture extends Activity {
 
 	private void captureSpenSurfaceView(int row, int col, String fileName) {	
 		Bitmap imgBitmap = mCharBoxes[row][col].captureCurrentView(true);
-		imgFileManager.saveBMPIntoFile(imgBitmap, fileName);
-		imgBitmap.recycle();
+		imgFileManager.saveBMP(imgBitmap, fileName);
 	}
 
 	@Override
