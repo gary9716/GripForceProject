@@ -54,7 +54,7 @@ public class PenSample1_7_Capture extends Activity {
 
 	private int mToolType = SpenSurfaceView.TOOL_SPEN;
 
-	private final static int numCharBoxesInRow = 4; //dont forget to modify these two numbers
+	private final static int numCharBoxesInRow = 5; //dont forget to modify these two numbers
 	private final static int numOfWritableCharBoxRows = 1;
 	private boolean isToCleanMode = false;
 
