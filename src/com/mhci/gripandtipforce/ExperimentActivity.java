@@ -1,4 +1,4 @@
-package com.samsung.android.sdk.pen.pg.example1_7;
+package com.mhci.gripandtipforce;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -33,13 +33,11 @@ import com.samsung.android.sdk.pen.engine.SpenTouchListener;
 import com.samsung.android.sdk.pen.pg.tool.SDKUtils;
 import com.samsung.android.sdk.pen.settingui.SpenSettingEraserLayout;
 import com.samsung.android.sdk.pen.settingui.SpenSettingPenLayout;
-import com.mhci.gripandtipforce.ImgFileManager;
-import com.mhci.gripandtipforce.LogFileManager;
 import com.mhci.gripandtipforce.R;
 
-public class PenSample1_7_Capture extends Activity {
+public class ExperimentActivity extends Activity {
 
-	private String DEBUG_TAG = PenSample1_7_Capture.class.getName().toString();
+	private String DEBUG_TAG = ExperimentActivity.class.getName().toString();
 
 	private Context mContext = null;
 	private SpenSettingPenLayout mPenSettingView;
@@ -204,7 +202,7 @@ public class PenSample1_7_Capture extends Activity {
 		calendar.set(2015, Calendar.JANUARY, 1);
 		fixedDateInMillis = calendar.getTimeInMillis();
 		
-		setContentView(R.layout.activity_capture2);
+		setContentView(R.layout.activity_experiment);
 		mContext = this;
 		imgFileManager = ImgFileManager.getInstance(this);
 		logFileManager = logFileManager.getInstance(this, numCharBoxesInRow, numOfWritableCharBoxRows);

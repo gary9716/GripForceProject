@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".PenSample1_7_Capture" >
+    tools:context=".ExperimentActivity" >
 
     <LinearLayout
         android:id="@+id/tool_menu"
@@ -83,7 +83,7 @@
                     android:height="@dimen/char_box_height"
                     android:maxHeight="@dimen/char_box_height"
                     android:maxWidth="@dimen/char_box_width"
-                    android:text="大"
+                    android:text="這"
                     android:textSize="50sp"
                     android:width="@dimen/char_box_width" />
 
@@ -111,7 +111,7 @@
                     android:height="@dimen/char_box_height"
                     android:maxHeight="@dimen/char_box_height"
                     android:maxWidth="@dimen/char_box_width"
-                    android:text="大"
+                    android:text="只"
                     android:textSize="50sp"
                     android:width="@dimen/char_box_width" />
 
@@ -139,7 +139,7 @@
                     android:height="@dimen/char_box_height"
                     android:maxHeight="@dimen/char_box_height"
                     android:maxWidth="@dimen/char_box_width"
-                    android:text="大"
+                    android:text="是"
                     android:textSize="50sp"
                     android:width="@dimen/char_box_width" />
 
@@ -167,7 +167,7 @@
                     android:height="@dimen/char_box_height"
                     android:maxHeight="@dimen/char_box_height"
                     android:maxWidth="@dimen/char_box_width"
-                    android:text="大"
+                    android:text="測"
                     android:textSize="50sp"
                     android:width="@dimen/char_box_width" />
 
@@ -194,7 +194,7 @@
                     android:height="@dimen/char_box_height"
                     android:maxHeight="@dimen/char_box_height"
                     android:maxWidth="@dimen/char_box_width"
-                    android:text="大"
+                    android:text="試"
                     android:textSize="50sp"
                     android:width="@dimen/char_box_width" />
 
