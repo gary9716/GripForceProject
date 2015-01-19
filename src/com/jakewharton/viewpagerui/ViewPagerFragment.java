@@ -46,18 +46,7 @@ public final class ViewPagerFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-//        TextView text = new TextView(getActivity());
-//        text.setGravity(Gravity.CENTER);
-//        text.setText(mContent);
-//        text.setTextSize(20 * getResources().getDisplayMetrics().density);
-//        text.setPadding(20, 20, 20, 20);
-//
-//        LinearLayout layout = new LinearLayout(getActivity());
-//        layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-//        layout.setGravity(Gravity.CENTER);
-//        layout.addView(text);
-    		
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {    		
     		View fragmentView = inflater.inflate(R.layout.fragment_viewpager, container, false);
     		TextView textView = (TextView) fragmentView.findViewById(R.id.explanation_text);
     		textView.setText(mContent);

@@ -53,7 +53,7 @@ public class ExperimentActivity extends Activity {
 	private int mToolType = SpenSurfaceView.TOOL_SPEN;
 
 	private final static int numCharBoxesInRow = 5; //dont forget to modify these two numbers
-	private final static int numOfWritableCharBoxRows = 1;
+	private final static int numWritableCharBoxRows = 1;
 	private boolean isToCleanMode = false;
 
 	private int[][] mWritableCharsContainerID = new int[][]{
@@ -64,7 +64,7 @@ public class ExperimentActivity extends Activity {
 				R.id.WritableCharContainer5}
 	};
 	
-	private SpenSurfaceView[][] mCharBoxes = new SpenSurfaceView[numOfWritableCharBoxRows][numCharBoxesInRow];
+	private SpenSurfaceView[][] mCharBoxes = new SpenSurfaceView[numWritableCharBoxRows][numCharBoxesInRow];
 
 	private SpenSettingPenInfo penInfo;
 	private SpenSettingEraserInfo eraserInfo;
@@ -152,7 +152,7 @@ public class ExperimentActivity extends Activity {
 				return;
 			}
 
-			for(int i = 0;i < numOfWritableCharBoxRows;i++) { 
+			for(int i = 0;i < numWritableCharBoxRows;i++) { 
 				for(int j = 0;j < numCharBoxesInRow;j++) {
 					mCharBoxes[i][j].setToolTypeAction(SpenSurfaceView.TOOL_SPEN, toolAction);
 				}
@@ -184,13 +184,13 @@ public class ExperimentActivity extends Activity {
 	};
 
 	private SpenNoteDoc mSpenNoteDoc;
-	private SpenPageDoc[][] mSpenPageDocs = new SpenPageDoc[numOfWritableCharBoxRows][numCharBoxesInRow];
-	private HashMap<SpenSurfaceView, SpenPageDoc> viewModelMap = new HashMap<SpenSurfaceView, SpenPageDoc>(numCharBoxesInRow * numOfWritableCharBoxRows);
+	private SpenPageDoc[][] mSpenPageDocs = new SpenPageDoc[numWritableCharBoxRows][numCharBoxesInRow];
+	private HashMap<SpenSurfaceView, SpenPageDoc> viewModelMap = new HashMap<SpenSurfaceView, SpenPageDoc>(numCharBoxesInRow * numWritableCharBoxRows);
 	
 	//private HashMap<Integer,Pair<Integer, Integer>> viewIndexMap = new HashMap<Integer,Pair<Integer, Integer>>(numCharBoxesInRow * numOfWritableCharBoxRows);
 	
 	private ImgFileManager imgFileManager = null;
-	private LogFileManager logFileManager = null;
+	private TxtFileManager txtFileManager = null;
 	private int charIndex;
 	
 	private long fixedDateInMillis = 0;
@@ -204,8 +204,7 @@ public class ExperimentActivity extends Activity {
 		
 		setContentView(R.layout.activity_experiment);
 		mContext = this;
-		imgFileManager = ImgFileManager.getInstance(this);
-		logFileManager = logFileManager.getInstance(this, numCharBoxesInRow, numOfWritableCharBoxRows);
+		
 		charIndex = 0;
 		
 		// Initialize Spen
@@ -224,10 +223,15 @@ public class ExperimentActivity extends Activity {
 			finish();
 		}
 		initSettingInfo2();
-
+		FileDirInfo dirInfo = new FileDirInfo(FileType.Image, null, null);
+		imgFileManager = new ImgFileManager(dirInfo, this);
+		dirInfo.setFileType(FileType.Log);
+		dirInfo.setOtherInfo((numCharBoxesInRow * numWritableCharBoxRows) + "");
+		txtFileManager = new TxtFileManager(dirInfo, this);
+		
 		mPenTipInfo = (TextView)findViewById(R.id.penTipInfo);
 		
-		for(int i = 0;i < numOfWritableCharBoxRows;i++) {
+		for(int i = 0;i < numWritableCharBoxRows;i++) {
 			for(int j = 0;j < numCharBoxesInRow;j++) {
 
 				mCharBoxes[i][j] = new SpenSurfaceView(this);   
@@ -269,7 +273,7 @@ public class ExperimentActivity extends Activity {
 		String imgFileName = null;
 		//SpenPageDoc docToSet = mSpenNoteDoc.appendPage();
 		
-		for(int i = 0;i < numOfWritableCharBoxRows;i++) {
+		for(int i = 0;i < numWritableCharBoxRows;i++) {
 			for(int j = 0;j < numCharBoxesInRow;j++) {
 				// Add a Page to NoteDoc, get an instance, and set it to the member variable.
 				
@@ -310,16 +314,16 @@ public class ExperimentActivity extends Activity {
 	}
 	
 	private void previousPage() {
-		charIndex = charIndex - numCharBoxesInRow*numOfWritableCharBoxRows;
+		charIndex = charIndex - numCharBoxesInRow*numWritableCharBoxRows;
 		if(charIndex < 0) {
 			charIndex = 0;
 		}
 	}
 	
 	private void nextPage() {
-		charIndex = charIndex + numCharBoxesInRow*numOfWritableCharBoxRows;
+		charIndex = charIndex + numCharBoxesInRow*numWritableCharBoxRows;
 		if(charIndex >= totalChars) {
-			charIndex = totalChars - numCharBoxesInRow*numOfWritableCharBoxRows;
+			charIndex = totalChars - numCharBoxesInRow*numWritableCharBoxRows;
 		}
 	}
 	

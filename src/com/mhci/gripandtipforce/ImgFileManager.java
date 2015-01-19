@@ -18,29 +18,23 @@ import android.widget.Toast;
 
 public class ImgFileManager {
 	public final static String DEBUG_TAG = ImgFileManager.class.toString();
-	private final static String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/GripForce/images";
-	private static ImgFileManager instance = null;
-	
 	private Context mContext;
 	private File imgDir = null;
-	private HandlerThread mThread = null;
-	private Handler mThreadHandler = null;
 	
-	public static ImgFileManager getInstance(Context context) {
-		if(instance == null) {
-			synchronized (ImgFileManager.class) {
-				if(instance == null) {
-					instance = new ImgFileManager();
-				}
+	public ImgFileManager(FileDirInfo dirInfo, Context context) {
+		mContext = context;
+		imgDir = new File(dirInfo.getDirPath());
+		initThreadAndHandler();
+		if (!imgDir.exists()) {
+			if (!imgDir.mkdirs()) {
+				Toast.makeText(mContext, "Save Path Creation Error", Toast.LENGTH_SHORT).show();
+				return;
 			}
 		}
-		
-		if(context != null) {
-			instance.mContext = context;
-		}
-		
-		return instance;
 	}
+	
+	private HandlerThread mThread = null;
+	private Handler mThreadHandler = null;
 	
 	private void initThreadAndHandler() {
 		mThread = new HandlerThread("SaveImgThread");
@@ -48,50 +42,41 @@ public class ImgFileManager {
 		mThreadHandler = new Handler(mThread.getLooper());
 	}
 	
-	private enum FuncIndex {
-		createOrOpenImgDir,
-		saveImgInDir
-	};
-	
-	private String fileNameForImgSavingThread = null;
-	private Bitmap bmpForImgSavingThread = null;
-	
-	public void saveBMP(Bitmap bmp, String filename) {
-		bmpForImgSavingThread = bmp;
-		fileNameForImgSavingThread = filename;
-		funcIndex = FuncIndex.saveImgInDir;
+	public void saveBMP(Bitmap bmp, String fileName) {
+		SaveBMPTask task = new SaveBMPTask(bmp, fileName);
 		if(mThreadHandler == null) {
 			initThreadAndHandler();
 		}
-		mThreadHandler.post(taskForThread);
+		mThreadHandler.post(task);
+		
 	}
 	
-	private FuncIndex funcIndex = FuncIndex.createOrOpenImgDir;
-	
-	public Runnable taskForThread = new Runnable() {
-		private void createOrOpenImgDir() {
-			imgDir = new File(dirPath);
-			if (!imgDir.exists()) {
-				if (!imgDir.mkdirs()) {
-					Toast.makeText(mContext, "Save Path Creation Error", Toast.LENGTH_SHORT).show();
-					return;
-				}
-			}
+	private class SaveBMPTask implements Runnable {
+		
+		private Bitmap mBitmapToSave;
+		private String fileNameForSaving;
+		
+		public SaveBMPTask(Bitmap bmp,String fileName) {
+			// TODO Auto-generated constructor stub
+			mBitmapToSave = bmp;
+			fileNameForSaving = fileName;
 		}
 		
-		private void saveBMPIntoFile(Bitmap bmp, String fileName) {
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
 			FileOutputStream out = null;
 			try {
 				String filePath = null;
 				if(imgDir != null) {
-					filePath = imgDir.getPath() + "/" + fileName;
+					filePath = imgDir.getPath() + "/" + fileNameForSaving;
 				}
 				else {
 					Toast.makeText(mContext, "Image Directory doesn't exist, failed to save image", Toast.LENGTH_LONG).show();
 					return;
 				}
 				out = new FileOutputStream(filePath);
-				bmp.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+				mBitmapToSave.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
 			    // PNG is a lossless format, the compression factor (100) is ignored
 			} catch (Exception e) {
 			    e.printStackTrace();
@@ -100,7 +85,7 @@ public class ImgFileManager {
 			        if (out != null) {
 			            out.close();
 			        }
-			        bmp.recycle();
+			        mBitmapToSave.recycle();
 			    } catch (IOException e) {
 			        e.printStackTrace();
 			    }
@@ -108,27 +93,6 @@ public class ImgFileManager {
 			}
 		}
 		
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			switch(funcIndex) {
-				case createOrOpenImgDir:
-					createOrOpenImgDir();
-					break;
-				case saveImgInDir:
-					saveBMPIntoFile(bmpForImgSavingThread, fileNameForImgSavingThread);
-					break;
-				default:
-					Log.d(DEBUG_TAG,"Unknown function index in task for thread");
-					break;
-			}
-		}
-	};
-	
-	public ImgFileManager() {
-		initThreadAndHandler();
-		funcIndex = FuncIndex.createOrOpenImgDir;
-		mThreadHandler.post(taskForThread);
 	}
 	
 }
