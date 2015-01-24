@@ -1,6 +1,5 @@
 package com.mhci.gripandtipforce;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,7 +16,7 @@ public class InputDataActivity extends FragmentActivity {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_inputdata);
-		Button confirmButton = (Button)findViewById(R.id.button_confirm);
+		Button confirmButton = (Button)findViewById(R.id.table_text_bt_setting);
 		final Context mContext = this;
 		confirmButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -38,7 +37,7 @@ public class InputDataActivity extends FragmentActivity {
 						// User clicked OK button
 						
 						//add loading animation
-						Intent intent = new Intent(mContext,ExperimentActivity.class);
+						Intent intent = new Intent(mContext,BluetoothSettingActivity.class);
 						startActivity(intent);
 					}
 				});

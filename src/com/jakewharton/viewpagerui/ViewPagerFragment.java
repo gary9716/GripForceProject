@@ -50,8 +50,8 @@ public final class ViewPagerFragment extends Fragment {
     		View fragmentView = inflater.inflate(R.layout.fragment_viewpager, container, false);
     		TextView textView = (TextView) fragmentView.findViewById(R.id.explanation_text);
     		textView.setText(mContent);
+    		Button startButton = (Button)fragmentView.findViewById(R.id.startButton);
     		if(mPageIndex == contentStrings.length - 1) {
-    			Button startButton = (Button)fragmentView.findViewById(R.id.startButton);
     			startButton.setOnClickListener(new OnClickListener() {
 					
 					@Override
@@ -63,6 +63,9 @@ public final class ViewPagerFragment extends Fragment {
 					}
 			});
     			startButton.setVisibility(View.VISIBLE);
+    		}
+    		else {
+    			startButton.setVisibility(View.GONE);
     		}
     		
         return fragmentView;
