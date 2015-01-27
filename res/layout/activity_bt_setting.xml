@@ -13,31 +13,6 @@
         android:layout_marginTop="110dp" >
 
         <TableRow
-            android:id="@+id/tableRow1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:id="@+id/text_explanation_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="right"
-                android:text="目前狀態："
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textSize="50sp" />
-
-            <TextView
-                android:id="@+id/text_bt_state"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:text="未連線"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textSize="50sp" />
-
-        </TableRow>
-
-        <TableRow
             android:id="@+id/tableRow2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" >
@@ -47,7 +22,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="right"
-                android:text="上一次連線："
+                android:text="上一次選擇："
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:textSize="50sp" />
 
@@ -101,7 +76,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="75dp"
         android:padding="@dimen/button_padding"
-        android:text="探索未配對的藍芽"
+        android:text="探索目前可用的藍芽"
         android:textSize="@dimen/bt_setting_text_size" />
 
     <Button
@@ -115,25 +90,26 @@
         android:textSize="@dimen/bt_setting_text_size" />
 
     <Button
-        android:id="@+id/button_connect"
+        android:id="@+id/button_test_connection"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_below="@+id/table_text_bt_setting"
+        android:layout_centerHorizontal="true"
         android:layout_marginTop="65dp"
         android:padding="@dimen/button_padding"
         android:text="連線"
-        android:textSize="@dimen/bt_setting_text_size" />
+        android:textSize="@dimen/bt_setting_text_size"
+        android:visibility="gone" />
 
     <Button
-        android:id="@+id/button_next_page"
+        android:id="@+id/button_experiment_next_step"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/button_select_from_discovered_devices"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="75dp"
         android:padding="@dimen/button_padding"
-        android:text="下一頁"
+        android:text="下一步"
         android:textSize="@dimen/bt_setting_text_size"
         android:visibility="gone" />
 

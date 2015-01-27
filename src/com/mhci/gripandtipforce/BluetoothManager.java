@@ -1,5 +1,7 @@
 package com.mhci.gripandtipforce;
 
+import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
@@ -21,6 +23,7 @@ public class BluetoothManager extends BroadcastReceiver{
 	private LinkedList<BroadcastReceiver> registeredReceivers = null;
 	private ArrayAdapter<String> mDataAdapter = null;
 	private boolean mOriginalBTStateEnabled = false;
+	
 	
 	/*
 	private static BluetoothManager instance = null;
@@ -72,6 +75,8 @@ public class BluetoothManager extends BroadcastReceiver{
 			Log.d(DEBUG_TAG, "dataAdapter is null");
 		}
 		
+		setOfDevices = new HashSet<String>();
+		
 	}
 	
 	@Override
@@ -112,6 +117,8 @@ public class BluetoothManager extends BroadcastReceiver{
 		
 	}
 	
+	private Set<String> setOfDevices; 
+	
 	//BT event listener
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -121,9 +128,11 @@ public class BluetoothManager extends BroadcastReceiver{
         if (BluetoothDevice.ACTION_FOUND.equals(action)) {
             // Get the BluetoothDevice object from the Intent
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            if(mDataAdapter != null) {
+            String deviceAddr = device.getAddress();
+            if(mDataAdapter != null && !setOfDevices.contains(deviceAddr)) {
             		// Add the name and address to an array adapter to show in a ListView
-            		mDataAdapter.add(device.getName() + "\n" + device.getAddress());
+            		mDataAdapter.add(device.getName() + "\n" + deviceAddr);
+            		setOfDevices.add(deviceAddr);
             }
             else {
             		Log.d(DEBUG_TAG, "mDataAdapter is null, unable to add data");
@@ -150,7 +159,7 @@ public class BluetoothManager extends BroadcastReceiver{
 		if(mBTAdapter == null || mDataAdapter == null) {
 			return;
 		}
-		
+		setOfDevices.clear();
 		mDataAdapter.clear();
 		if(!mBTAdapter.startDiscovery()) {
 			Toast.makeText(mContext, "failed to start discovering bluetooth devices", Toast.LENGTH_LONG).show();
@@ -174,21 +183,38 @@ public class BluetoothManager extends BroadcastReceiver{
 			return;
 		}
 		
-		Set<BluetoothDevice> pairedDevices = mBTAdapter.getBondedDevices();
-		// If there are paired devices
-		if (pairedDevices.size() > 0) {
-		    mDataAdapter.clear(); //first clear previous data
-			// Loop through paired devices
-		    for (BluetoothDevice device : pairedDevices) {
-		        // Add the name and address to an array adapter to show in a ListView
-		        mDataAdapter.add(device.getName() + "\n" + device.getAddress());
-		    }
-		}
+		mDataAdapter.clear(); //first clear previous data   
 		
-		//mDataAdapter.notifyDataSetChanged();
+		Set<BluetoothDevice> pairedDevices = mBTAdapter.getBondedDevices();
+		// Loop through paired devices
+	    for (BluetoothDevice device : pairedDevices) {
+	        // Add the name and address to an array adapter to show in a ListView
+	        mDataAdapter.add(device.getName() + "\n" + device.getAddress());
+	    }
+		
 		return;
 	}
 	
+	public boolean createBond(BluetoothDevice btDevice) throws Exception { 
+        //pretty dirty code that use reflection
+		Method createBondMethod = btDevice.getClass().getMethod("createBond");  
+		Boolean returnValue = false;
+		if(createBondMethod != null) {
+			returnValue = (Boolean) createBondMethod.invoke(btDevice);  
+        }
+		else {
+			Log.d(DEBUG_TAG, "reflection here may not work anymore");
+		}
+		return returnValue.booleanValue();  
+    }  
 	
+	public BluetoothDevice getDevice(String addr) {
+		return mBTAdapter.getRemoteDevice(addr);
+	}
+	
+	public boolean hasBondedWith(BluetoothDevice device) {
+		return mBTAdapter.getBondedDevices().contains(device);
+	}
+
 
 }

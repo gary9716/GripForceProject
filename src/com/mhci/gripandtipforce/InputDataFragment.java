@@ -15,18 +15,26 @@ public class InputDataFragment extends Fragment {
 	
 	private final static int numFields = 7;
 	private Resources mRes = null;
-	
+	private String packageName = null;
 	public View findViewByStr(View viewToSearchIn, String name) {
 		if(mRes == null) {
 			mRes = getResources();
 		}
 			
-		int resId = mRes.getIdentifier(name, "id", "com.mhci.gripandtipforce");
+		int resId = mRes.getIdentifier(name, "id", packageName);
 		return viewToSearchIn.findViewById(resId);
 		
 	}
 	
 	private TextView[] fieldViews = null;
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		packageName = getActivity().getPackageName();
+		
+	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,

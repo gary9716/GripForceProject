@@ -1,21 +1,19 @@
 package com.mhci.gripandtipforce;
 
-import java.io.File;
-
 import android.os.Environment;
 
 public class FileDirInfo {
 	private FileType mFileType = FileType.Log;
-	private static String[] defaultDirPath = new String[FileType.numFileType.ordinal()];
+	private static String[] defaultDirPath;
 	private String mDirPath;
 	private String mOtherInfo;
 	
 	public FileDirInfo(FileType fileType, String dirPath, String otherInfo) {
-		if(defaultDirPath[0] == null) {
-			String rootDirPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-			defaultDirPath[FileType.Log.ordinal()] = rootDirPath + "/" + ProjectConfig.projectName + "/Logs";
-			defaultDirPath[FileType.PersonalInfo.ordinal()] = rootDirPath + "/" + ProjectConfig.projectName + "/PersonalInformation";
-			defaultDirPath[FileType.Image.ordinal()] = rootDirPath + "/" + ProjectConfig.projectName + "/Images";
+		if(defaultDirPath == null) {
+			defaultDirPath = new String[FileType.numFileType.ordinal()];
+			defaultDirPath[FileType.Log.ordinal()] = ProjectConfig.rootDirPath + "/" + ProjectConfig.projectName + "/Logs";
+			defaultDirPath[FileType.PersonalInfo.ordinal()] = ProjectConfig.rootDirPath + "/" + ProjectConfig.projectName + "/PersonalInformation";
+			defaultDirPath[FileType.Image.ordinal()] = ProjectConfig.rootDirPath + "/" + ProjectConfig.projectName + "/Images";
 		}
 		
 		mFileType = fileType;
@@ -29,8 +27,11 @@ public class FileDirInfo {
 		
 	}
 	
-	public void setFileType(FileType fileType) {
+	public void setFileType(FileType fileType, boolean toUseDefaultDirPath) {
 		mFileType = fileType;
+		if(toUseDefaultDirPath) {
+			mDirPath = defaultDirPath[fileType.ordinal()];
+		}
 	}
 	
 	public void setDirPath(String dirPath) {
@@ -53,4 +54,20 @@ public class FileDirInfo {
 		return mOtherInfo;
 	}
 	
+	public static boolean isExternalStorageWritable() {
+	    String state = Environment.getExternalStorageState();
+	    if (Environment.MEDIA_MOUNTED.equals(state)) {
+	        return true;
+	    }
+	    return false;
+	}
+
+	public static boolean isExternalStorageReadable() {
+	    String state = Environment.getExternalStorageState();
+	    if (Environment.MEDIA_MOUNTED.equals(state) ||
+	        Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+	        return true;
+	    }
+	    return false;
+	}
 }

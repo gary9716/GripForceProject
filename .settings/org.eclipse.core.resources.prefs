@@ -1,5 +1,10 @@
 eclipse.preferences.version=1
 encoding//src/com/jakewharton/viewpagerui/ViewPagerFragment.java=UTF-8
 encoding//src/com/jakewharton/viewpagerui/ViewPagerFragmentAdapter.java=UTF-8
+encoding//src/com/mhci/gripandtipforce/BluetoothClientConnector.java=UTF-8
 encoding//src/com/mhci/gripandtipforce/BluetoothSettingActivity.java=UTF-8
+encoding//src/com/mhci/gripandtipforce/ExperimentActivity.java=UTF-8
+encoding//src/com/mhci/gripandtipforce/ImgFileManager.java=UTF-8
 encoding//src/com/mhci/gripandtipforce/InputDataActivity.java=UTF-8
+encoding//src/com/mhci/gripandtipforce/LoadActivityContentAsyncTask.java=UTF-8
+encoding//src/com/mhci/gripandtipforce/TxtFileManager.java=UTF-8
