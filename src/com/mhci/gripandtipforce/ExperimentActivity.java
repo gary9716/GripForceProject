@@ -1,6 +1,7 @@
 package com.mhci.gripandtipforce;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 
@@ -11,6 +12,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -23,6 +25,7 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -56,7 +59,7 @@ public class ExperimentActivity extends Activity {
 	private ImageView mPenBtn;
 	private ImageView mEraserBtn;
 	private ImageView mCleanBtn;
-	private ImageView mSaveBtn;
+	//private ImageView mSaveBtn;
 	private ImageView mNextPageBtn;
 
 	private TextView mPenTipInfo = null;
@@ -80,73 +83,59 @@ public class ExperimentActivity extends Activity {
 
 	private TextView[][] mExampleCharsTextView = new TextView[numWritableCharBoxRows][numCharBoxesInRow];
 	
+	private TextView mPreOrPostInfo = null;
+	
 	private SpenSettingPenInfo penInfo;
 	private SpenSettingEraserInfo eraserInfo;
 
 	private LocalBroadcastManager mLBCManager = null;
+	private Handler uiThreadHandler = null;
+
+	private SpenNoteDoc mSpenNoteDoc;
+	private SpenPageDoc[][] mSpenPageDocs = new SpenPageDoc[numWritableCharBoxRows][numCharBoxesInRow];
+	private HashMap<SpenSurfaceView, SpenPageDoc> viewModelMap = new HashMap<SpenSurfaceView, SpenPageDoc>(numCharBoxesInRow * numWritableCharBoxRows);
 	
-	private class customizedLongPressedListener implements SpenLongPressListener {
+	private Resources mRes;
+	private String packageName;
+	
+	private ImgFileManager imgFileManager = null;
+	private TxtFileManager txtFileManager = null;
+	private View mExperimentView = null;
+	private View mPreOrPostExperimentView = null;
+	private Button mPreOrPostNextPageButton = null;
+	private long fixedDateInMillis = 0;
+	
+	private int charIndex = 0;
+	private int mGrade = 1; //default we use first grade
+	private int testingSetIndex = 0;
+	private ArrayList<Integer> testingSetGradesSeq = null;
+	
+	private int mUserGrade = 1;
+	private String mUserDominantHand = ProjectConfig.rightHand;
+	private UIState preOrPostInterfaceState = UIState.preExperimentTrial;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(2015, Calendar.JANUARY, 1);
+		fixedDateInMillis = calendar.getTimeInMillis();
 		
-		private SpenSurfaceView currentlySelectedSurfaceView = null;
-
-		private SpenSurfaceView bindedSurfaceView = null;
-
-		public customizedLongPressedListener(SpenSurfaceView surfaceView) {
-			bindedSurfaceView = surfaceView;
-		}
+		mContext = this;
+		uiThreadHandler = new Handler(getMainLooper());
 		
-		private void cleanCurrentlySelectedView() {
-			if(currentlySelectedSurfaceView != null) {
-				SpenPageDoc model = viewModelMap.get(currentlySelectedSurfaceView);
-				model.removeAllObject();
-				currentlySelectedSurfaceView.update();
-			}
-			return;
-		}
+		packageName = getPackageName();
+		mRes = getResources();
 		
-		@Override
-		public void onLongPressed(MotionEvent arg0) {
-			// TODO Auto-generated method stub
-			currentlySelectedSurfaceView = bindedSurfaceView;
-
-			if(isToCleanMode) {
-
-				currentlySelectedSurfaceView.setSelected(true);
-
-				// 1. Instantiate an AlertDialog.Builder with its constructor
-				AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-
-				// 2. Chain together various setter methods to set the dialog characteristics
-				builder.setMessage("You're going to clean the handwriting you just clicked.\nAre you sure?");
-
-				// Add the buttons
-				builder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						// User clicked OK button
-						cleanCurrentlySelectedView();
-					}
-				});
-				
-				builder.setNegativeButton("cancel", null);
-
-				// 3. Get the AlertDialog from create()
-				(builder.create()).show();
-
-			}
-
-		}
-
+		mLBCManager = LocalBroadcastManager.getInstance(mContext);
+		IntentFilter filter = new IntentFilter(Action_update_chars);
+		mLBCManager.registerReceiver(broadcastReceiver, filter);
+		
+		//try to make UX better, I decide to put some task in background 
+		//and use progress dialog to make user feel this app faster than before or at least knowing the state of current app.
+		(new LoadActivityContentAsyncTask(mContext, new BeforeViewShownTask(mContext), null)).execute(); 
 	}
-
-	private SpenTouchListener sPenTouchListener = new SpenTouchListener() {
-		@Override
-		public boolean onTouch(View v, MotionEvent event) {
-			// TODO Auto-generated method stub
-			mPenTipInfo.setText("p:" + event.getPressure() + ",x:" + event.getX() + ",y:" + event.getY() + ",ts:" + (System.currentTimeMillis() - fixedDateInMillis));
-			return false;
-		}
-	};
-
+	
 	private View.OnClickListener mBtnOnClickListener = new View.OnClickListener() {
 		private void setSPenToolActionWithAllCanvases(int toolAction) {
 			//due to Homogeneity, we could check first one to know the others
@@ -182,61 +171,28 @@ public class ExperimentActivity extends Activity {
 				setSPenToolActionWithAllCanvases(SpenSurfaceView.ACTION_STROKE);
 				selectButton(mCleanBtn);
 			}
+			else if(id == R.id.button_experiment_next_step) {
+				if(preOrPostInterfaceState == UIState.preExperimentTrial) {
+					if(testingSetIndex >= testingSetGradesSeq.size()) {
+						//the test should be over now.
+						return;
+					}
+					charIndex = 0;
+					mGrade = testingSetGradesSeq.get(testingSetIndex);
+					//loadExCharsFromFile(mGrade);
+					loadExCharsFromFile(2);
+					setContentView(mExperimentView); //switch to experiment view
+					preOrPostInterfaceState = UIState.postExperimentTrial;
+				}
+				else if(preOrPostInterfaceState == UIState.postExperimentTrial) {
+					testingSetIndex++; //next testing set
+					showPreExperimentView(testingSetGradesSeq.get(testingSetIndex));
+					preOrPostInterfaceState = UIState.preExperimentTrial;
+				}
+			}
 
 		}
 	};
-
-	private SpenNoteDoc mSpenNoteDoc;
-	private SpenPageDoc[][] mSpenPageDocs = new SpenPageDoc[numWritableCharBoxRows][numCharBoxesInRow];
-	private HashMap<SpenSurfaceView, SpenPageDoc> viewModelMap = new HashMap<SpenSurfaceView, SpenPageDoc>(numCharBoxesInRow * numWritableCharBoxRows);
-	
-	private ImgFileManager imgFileManager = null;
-	private TxtFileManager txtFileManager = null;
-	private View mExperimentView = null;
-	private long fixedDateInMillis = 0;
-	
-	private int charIndex = 0;
-	private int mGrade = 1; //default we use first grade
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		Calendar calendar = Calendar.getInstance();
-		calendar.set(2015, Calendar.JANUARY, 1);
-		fixedDateInMillis = calendar.getTimeInMillis();
-		
-		setContentView(R.layout.activity_start_and_end);
-		mContext = this;
-		uiThreadHandler = new Handler(getMainLooper());
-		
-		packageName = getPackageName();
-		mRes = getResources();
-		
-		mLBCManager = LocalBroadcastManager.getInstance(mContext);
-		IntentFilter filter = new IntentFilter(Action_update_chars);
-		mLBCManager.registerReceiver(broadcastReceiver, filter);
-		
-		//try to make UX better, I decide to put some task in background 
-		//and use progress dialog to make user feel this app faster than before or at least knowing the state of current app.
-		(new LoadActivityContentAsyncTask(mContext, new BeforeViewShownTask(mContext), new Runnable() {
-			
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				setContentView(mExperimentView);
-			}
-		})).execute(); 
-	}
-	
-	private Resources mRes;
-	private String packageName;
-	
-	public View findViewByStr(View viewToSearchIn, String name) {
-			
-		int resId = mRes.getIdentifier(name, "id", packageName);
-		return viewToSearchIn.findViewById(resId);
-		
-	}
 	
 	private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
 		
@@ -250,18 +206,14 @@ public class ExperimentActivity extends Activity {
 		}
 	};
 	
-	private void initSettingInfo2() {
-
-		// Initialize Pen settings
-		penInfo = new SpenSettingPenInfo();
-		penInfo.color = Color.BLACK;
-		penInfo.size = 1;
-
-		// Initialize Eraser settings
-		eraserInfo = new SpenSettingEraserInfo();
-		eraserInfo.size = 30;
-
-	}
+	private SpenTouchListener sPenTouchListener = new SpenTouchListener() {
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			// TODO Auto-generated method stub
+			mPenTipInfo.setText("p:" + event.getPressure() + ",x:" + event.getX() + ",y:" + event.getY() + ",ts:" + (System.currentTimeMillis() - fixedDateInMillis));
+			return false;
+		}
+	};
 	
 	private void setNextPageButtonClickable(boolean enable) {
 		mNextPageBtn.setClickable(enable);
@@ -269,9 +221,9 @@ public class ExperimentActivity extends Activity {
 	
 	private String[] cachedChars = null;
 	
-	private void loadExCharsFromFile() {
+	private void loadExCharsFromFile(int grade) {
 		cachedChars = null;
-		txtFileManager.toLoadChineseChars(mGrade);
+		txtFileManager.toLoadChineseChars(grade);
 	}
 	
 	public void updateExChars(String[] exChars) {
@@ -281,8 +233,8 @@ public class ExperimentActivity extends Activity {
 				charsUsedForUpdate = cachedChars;
 			}
 			else {
-				Log.d(DEBUG_TAG, "updating exChars failed");
-				loadExCharsFromFile();
+				Log.d(DEBUG_TAG, "no available chars, updating exChars failed");
+				loadExCharsFromFile(mGrade);
 				return;
 			}
 		}
@@ -298,19 +250,50 @@ public class ExperimentActivity extends Activity {
 					mExampleCharsTextView[i][j].setText(charsUsedForUpdate[charIndexToRetrieve]);
 				}
 				else {
-					Log.d(DEBUG_TAG, "updating exChars failed");
-					loadExCharsFromFile();
+					Log.d(DEBUG_TAG, "out of range, updating exChars failed");
 					setNextPageButtonClickable(true);
 					return;
 				}
+				
 			}
 		}
 		setNextPageButtonClickable(true);
 		return;
 	}
 	
-	private Handler uiThreadHandler = null;
+	private void previousPage() {
+		charIndex = charIndex - numCharsInAPage;
+		if(charIndex < 0) {
+			charIndex = 0;
+		}
+		updateExChars(null);
+	}
 	
+	private void nextPage() {
+		charIndex = charIndex + numCharsInAPage;
+		if(cachedChars != null && charIndex >= cachedChars.length) {
+			//switch to next testing set
+			
+		}
+		updateExChars(null);
+	}
+	
+	private void nextTestingSet() {
+		cachedChars = null;
+		
+	}
+	
+	private void showPreExperimentView(int grade) {
+		if(testingSetIndex < testingSetGradesSeq.size()) {
+			mPreOrPostInfo.setText("即將開始測試" + grade + "年級的生字，\n準備好後請按下一步");
+		}
+		else {
+			mPreOrPostNextPageButton.setVisibility(View.GONE);
+			mPreOrPostInfo.setText("評量到此結束，感謝你的參與");
+		}
+		setContentView(mPreOrPostExperimentView);
+	}
+		
 	private class BeforeViewShownTask implements Runnable {
 
 		private Context mContext;
@@ -422,8 +405,6 @@ public class ExperimentActivity extends Activity {
 			
 			/* Spen Dependent Part End */
 			
-			charIndex = 0;
-			
 			FileDirInfo dirInfo = new FileDirInfo(FileType.Image, null, null);
 			imgFileManager = new ImgFileManager(dirInfo, mContext);
 			dirInfo.setFileType(FileType.Log, true);
@@ -442,6 +423,9 @@ public class ExperimentActivity extends Activity {
 			mCleanBtn = (ImageView) mExperimentView.findViewById(R.id.cleanBtn);
 			mCleanBtn.setOnClickListener(mBtnOnClickListener);
 			
+			mNextPageBtn = (ImageView) mExperimentView.findViewById(R.id.nextPageBtn);
+			mNextPageBtn.setOnClickListener(mBtnOnClickListener);
+			
 			for(int i = 0;i < numWritableCharBoxRows;i++) {
 				for(int j = 0;j < numCharBoxesInRow;j++) {
 					mExampleCharsTextView[i][j] = (TextView)findViewByStr(mExperimentView, "exChar" + (i * numCharBoxesInRow + j + 1));
@@ -449,31 +433,115 @@ public class ExperimentActivity extends Activity {
 			}
 			
 			selectButton(mPenBtn);
-
-			//back to first page and update chars
+			
+			mPreOrPostExperimentView = inflater.inflate(R.layout.activity_start_and_end, null);
+			mPreOrPostInfo = (TextView)mPreOrPostExperimentView.findViewById(R.id.text_pre_or_post_info);
+			mPreOrPostNextPageButton = (Button)mPreOrPostExperimentView.findViewById(R.id.button_experiment_next_step);
+			mPreOrPostNextPageButton.setOnClickListener(mBtnOnClickListener);
+		
+			
+			SharedPreferences userInfoPreference = mContext.getSharedPreferences(ProjectConfig.Key_Preference_UserInfo, Context.MODE_PRIVATE);
+			
+			mUserGrade = 1;
+			mUserDominantHand = ProjectConfig.rightHand;
+			
+			if(userInfoPreference != null) {
+				mUserGrade = (int)userInfoPreference.getLong(ProjectConfig.Key_Preference_UserGrade, 1);
+				mUserDominantHand = userInfoPreference.getString(ProjectConfig.Key_Preference_UserDominantHand, ProjectConfig.rightHand);
+			}
+			
+			testingSetGradesSeq = ProjectConfig.getTestingGradeSequence(mUserGrade);
+			
+			testingSetIndex = 0;
 			charIndex = 0;
-			previousPage();
+			preOrPostInterfaceState = UIState.preExperimentTrial;
+			mGrade = testingSetGradesSeq.get(testingSetIndex);
+			
+			uiThreadHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					showPreExperimentView(mGrade);
+				}
+			});
 			
 		}
 		
 	}
 	
-	private void previousPage() {
-		charIndex = charIndex - numCharsInAPage;
-		if(charIndex < 0) {
-			charIndex = 0;
-		}
-		updateExChars(null);
+	private View findViewByStr(View viewToSearchIn, String name) {
+		
+		int resId = mRes.getIdentifier(name, "id", packageName);
+		return viewToSearchIn.findViewById(resId);
+		
 	}
 	
-	private void nextPage() {
-		charIndex = charIndex + numCharsInAPage;
-		if(cachedChars != null && charIndex >= cachedChars.length) {
-			charIndex = cachedChars.length - numCharsInAPage;
-		}
-		updateExChars(null);
-	}
+	private void initSettingInfo2() {
 
+		// Initialize Pen settings
+		penInfo = new SpenSettingPenInfo();
+		penInfo.color = Color.BLACK;
+		penInfo.size = 1;
+
+		// Initialize Eraser settings
+		eraserInfo = new SpenSettingEraserInfo();
+		eraserInfo.size = 30;
+
+	}
+	
+	private class customizedLongPressedListener implements SpenLongPressListener {
+		
+		private SpenSurfaceView currentlySelectedSurfaceView = null;
+
+		private SpenSurfaceView bindedSurfaceView = null;
+
+		public customizedLongPressedListener(SpenSurfaceView surfaceView) {
+			bindedSurfaceView = surfaceView;
+		}
+		
+		private void cleanCurrentlySelectedView() {
+			if(currentlySelectedSurfaceView != null) {
+				SpenPageDoc model = viewModelMap.get(currentlySelectedSurfaceView);
+				model.removeAllObject();
+				currentlySelectedSurfaceView.update();
+			}
+			return;
+		}
+		
+		@Override
+		public void onLongPressed(MotionEvent arg0) {
+			// TODO Auto-generated method stub
+			currentlySelectedSurfaceView = bindedSurfaceView;
+
+			if(isToCleanMode) {
+
+				currentlySelectedSurfaceView.setSelected(true);
+
+				// 1. Instantiate an AlertDialog.Builder with its constructor
+				AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+
+				// 2. Chain together various setter methods to set the dialog characteristics
+				builder.setMessage("You're going to clean the handwriting you just clicked.\nAre you sure?");
+
+				// Add the buttons
+				builder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						// User clicked OK button
+						cleanCurrentlySelectedView();
+					}
+				});
+				
+				builder.setNegativeButton("cancel", null);
+
+				// 3. Get the AlertDialog from create()
+				(builder.create()).show();
+
+			}
+
+		}
+
+	}
+	
 	private void selectButton(View v) {
 		// Enable or disable the button according to the current mode.
 		mPenBtn.setSelected(false);
@@ -495,7 +563,7 @@ public class ExperimentActivity extends Activity {
 		Bitmap imgBitmap = mCharBoxes[row][col].captureCurrentView(true);
 		imgFileManager.saveBMP(imgBitmap, fileName);
 	}
-
+	
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();

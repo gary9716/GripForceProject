@@ -29,6 +29,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class BluetoothSettingActivity extends Activity{
+	public final static String debug_tag = BluetoothSettingActivity.class.getName();
+	
 	private final static String emptyStateName = "無";
 	
 	private Context mContext = null;
@@ -87,9 +89,24 @@ public class BluetoothSettingActivity extends Activity{
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
+		Log.d(debug_tag, "onDestroy in " + BluetoothSettingActivity.class.getName());
 		if(mLBCManager != null) {
 			mLBCManager.unregisterReceiver(infoReceiver);
 		}
+	}
+	
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		Log.d(debug_tag, "onPause in " + BluetoothSettingActivity.class.getName());
+	}
+	
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		super.onStop();
+		Log.d(debug_tag, "onStop in " + BluetoothSettingActivity.class.getName());
 	}
 	
 	private TextWatcher textChangedListener = new TextWatcher() {

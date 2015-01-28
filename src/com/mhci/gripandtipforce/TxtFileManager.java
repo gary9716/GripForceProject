@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -219,7 +220,8 @@ public class TxtFileManager extends FileManager{
 			}
 		}
 		
-		return (String [])container.toArray();
+		String[] buffer = new String[container.size()];
+		return container.toArray(buffer);
 	}
 	
 	

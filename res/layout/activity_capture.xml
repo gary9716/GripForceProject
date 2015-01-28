@@ -42,7 +42,7 @@
             android:src="@drawable/tool_clean_brush" />
         
         <ImageView
-            android:id="@+id/saveBtn"
+            android:id="@+id/nextPageBtn"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_margin="1dip"

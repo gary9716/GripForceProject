@@ -42,14 +42,14 @@
             android:src="@drawable/tool_clean_brush" />
         
         <ImageView
-            android:id="@+id/saveBtn"
+            android:id="@+id/nextPageBtn"
             android:layout_width="0dip"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_margin="1dip"
             android:layout_weight="1"
             android:background="@drawable/selector_tool_bg"
             android:contentDescription="@string/description"
-            android:src="@drawable/selector_save" />
+            android:src="@drawable/next_page" />
         
     </LinearLayout>
 
