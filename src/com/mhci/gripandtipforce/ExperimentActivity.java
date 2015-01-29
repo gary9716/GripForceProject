@@ -19,10 +19,15 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -43,11 +48,14 @@ import com.samsung.android.sdk.pen.engine.SpenTouchListener;
 import com.samsung.android.sdk.pen.pg.tool.SDKUtils;
 import com.samsung.android.sdk.pen.settingui.SpenSettingEraserLayout;
 import com.samsung.android.sdk.pen.settingui.SpenSettingPenLayout;
+import com.jakewharton.viewpagerui.UnderlinesStyledFragmentActivity;
 import com.mhci.gripandtipforce.R;
 
 public class ExperimentActivity extends Activity {
 	
 	public final static String Action_update_chars = ExperimentActivity.class.getName() + ".update_chars";
+	//public final static String Action_create_and_open_files = ExperimentActivity.class.getName() + ".create_and_open_files";
+	
 	public final static String Key_ExChars = "ExChars";
 	
 	private final static String DEBUG_TAG = ExperimentActivity.class.getName();
@@ -59,7 +67,6 @@ public class ExperimentActivity extends Activity {
 	private ImageView mPenBtn;
 	private ImageView mEraserBtn;
 	private ImageView mCleanBtn;
-	//private ImageView mSaveBtn;
 	private ImageView mNextPageBtn;
 
 	private TextView mPenTipInfo = null;
@@ -68,7 +75,7 @@ public class ExperimentActivity extends Activity {
 
 	private final static int numCharBoxesInRow = 5; //dont forget to modify these two numbers
 	private final static int numWritableCharBoxRows = 1;
-	private final static int numCharsInAPage = numCharBoxesInRow * numWritableCharBoxRows;
+	private final static int numCharBoxesInAPage = numCharBoxesInRow * numWritableCharBoxRows;
 	private boolean isToCleanMode = false;
 
 	private int[][] mWritableCharsContainerID = new int[][]{
@@ -78,7 +85,7 @@ public class ExperimentActivity extends Activity {
 				R.id.WritableCharContainer4, 
 				R.id.WritableCharContainer5}
 	};
-	
+	private SpenSurfaceView mFirstSurfaceView;
 	private SpenSurfaceView[][] mCharBoxes = new SpenSurfaceView[numWritableCharBoxRows][numCharBoxesInRow];
 
 	private TextView[][] mExampleCharsTextView = new TextView[numWritableCharBoxRows][numCharBoxesInRow];
@@ -93,7 +100,8 @@ public class ExperimentActivity extends Activity {
 
 	private SpenNoteDoc mSpenNoteDoc;
 	private SpenPageDoc[][] mSpenPageDocs = new SpenPageDoc[numWritableCharBoxRows][numCharBoxesInRow];
-	private HashMap<SpenSurfaceView, SpenPageDoc> viewModelMap = new HashMap<SpenSurfaceView, SpenPageDoc>(numCharBoxesInRow * numWritableCharBoxRows);
+	private HashMap<SpenSurfaceView, SpenPageDoc> viewModelMap = 
+			new HashMap<SpenSurfaceView, SpenPageDoc>(numCharBoxesInRow * numWritableCharBoxRows);
 	
 	private Resources mRes;
 	private String packageName;
@@ -110,9 +118,19 @@ public class ExperimentActivity extends Activity {
 	private int testingSetIndex = 0;
 	private ArrayList<Integer> testingSetGradesSeq = null;
 	
+	private String mUserID = ProjectConfig.defaultUserID;
 	private int mUserGrade = 1;
 	private String mUserDominantHand = ProjectConfig.rightHand;
 	private UIState preOrPostInterfaceState = UIState.preExperimentTrial;
+	
+	private HandlerThread mWorkerThread;
+	private Handler mWorkerThreadHandler;
+	
+	private void initThreadAndHandler() {
+		mWorkerThread = new HandlerThread("workerThreadForExperimentAct");
+		mWorkerThread.start();
+		mWorkerThreadHandler = new Handler(mWorkerThread.getLooper());
+	}
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +149,8 @@ public class ExperimentActivity extends Activity {
 		IntentFilter filter = new IntentFilter(Action_update_chars);
 		mLBCManager.registerReceiver(broadcastReceiver, filter);
 		
+		initThreadAndHandler();
+		
 		//try to make UX better, I decide to put some task in background 
 		//and use progress dialog to make user feel this app faster than before or at least knowing the state of current app.
 		(new LoadActivityContentAsyncTask(mContext, new BeforeViewShownTask(mContext), null)).execute(); 
@@ -140,7 +160,7 @@ public class ExperimentActivity extends Activity {
 		private void setSPenToolActionWithAllCanvases(int toolAction) {
 			//due to Homogeneity, we could check first one to know the others
 
-			if(mCharBoxes[0][0].getToolTypeAction(SpenSurfaceView.TOOL_SPEN) == toolAction) { 
+			if(mFirstSurfaceView.getToolTypeAction(SpenSurfaceView.TOOL_SPEN) == toolAction) { 
 				return;
 			}
 
@@ -162,7 +182,7 @@ public class ExperimentActivity extends Activity {
 				setSPenToolActionWithAllCanvases(SpenSurfaceView.ACTION_STROKE);
 				selectButton(mPenBtn);
 			}
-			else if(id == R.id.eraserBtn){
+			else if(id == R.id.eraserBtn) {
 				setSPenToolActionWithAllCanvases(SpenSurfaceView.ACTION_ERASER);
 				selectButton(mEraserBtn);
 			}
@@ -177,18 +197,30 @@ public class ExperimentActivity extends Activity {
 						//the test should be over now.
 						return;
 					}
-					charIndex = 0;
-					mGrade = testingSetGradesSeq.get(testingSetIndex);
-					//loadExCharsFromFile(mGrade);
-					loadExCharsFromFile(2);
+					
 					setContentView(mExperimentView); //switch to experiment view
+					if(isPreloadingLogFiles) {
+						//it means last preloading task haven't been done.
+						//so load current log files and show progress dialog for user to wait
+						(new LoadActivityContentAsyncTask(
+								mContext, 
+								new CreateOrOpenLogFileTask(charIndex + 1, 0, numCharBoxesInAPage), 
+								null,
+								"開啟Log檔案中",
+								"請稍候")).execute();
+					}
+					//if chars haven't been loaded or files haven't been opened or created 
+					//then show progress dialog to let user wait
+					
 					preOrPostInterfaceState = UIState.postExperimentTrial;
 				}
 				else if(preOrPostInterfaceState == UIState.postExperimentTrial) {
-					testingSetIndex++; //next testing set
-					showPreExperimentView(testingSetGradesSeq.get(testingSetIndex));
+					showPreExperimentView(mGrade);
 					preOrPostInterfaceState = UIState.preExperimentTrial;
 				}
+			}
+			else if(id == R.id.nextPageBtn) { //button on experiment view
+				nextPage();
 			}
 
 		}
@@ -203,17 +235,42 @@ public class ExperimentActivity extends Activity {
 			if(action.equals(Action_update_chars)) {
 				updateExChars(intent.getStringArrayExtra(Key_ExChars));
 			}
+			
 		}
 	};
 	
-	private SpenTouchListener sPenTouchListener = new SpenTouchListener() {
+	private class CustomizedSpenTouchListener implements SpenTouchListener{
+		private final static char delimiter = ',';
+		private int mCharboxIndex = -1;
+		private StringBuffer stringBuffer = new StringBuffer();
+		public CustomizedSpenTouchListener(int charboxIndex) {
+			// TODO Auto-generated constructor stub
+			mCharboxIndex = charboxIndex;
+		}
+		
 		@Override
-		public boolean onTouch(View v, MotionEvent event) {
+		public boolean onTouch(View view, MotionEvent event) {
 			// TODO Auto-generated method stub
-			mPenTipInfo.setText("p:" + event.getPressure() + ",x:" + event.getX() + ",y:" + event.getY() + ",ts:" + (System.currentTimeMillis() - fixedDateInMillis));
+			if(event.getToolType(0) == MotionEvent.TOOL_TYPE_STYLUS && mPenBtn.isSelected()) {
+				//mPenTipInfo.setText("p:" + event.getPressure() + ",x:" + event.getX() + ",y:" + event.getY() + ",ts:" + (System.currentTimeMillis() - fixedDateInMillis));
+				stringBuffer.setLength(0); //clean buffer
+				stringBuffer.append(System.currentTimeMillis());
+				stringBuffer.append(delimiter);
+				stringBuffer.append(event.getX());
+				stringBuffer.append(delimiter);
+				stringBuffer.append(event.getY());
+				stringBuffer.append(delimiter);
+				stringBuffer.append(event.getPressure());
+				txtFileManager.appendLogWithNewlineAsync(mCharboxIndex, stringBuffer.toString());
+			}
+			else {
+				mPenTipInfo.setText("it's finger");
+			}
+			
 			return false;
 		}
-	};
+		
+	}
 	
 	private void setNextPageButtonClickable(boolean enable) {
 		mNextPageBtn.setClickable(enable);
@@ -222,23 +279,34 @@ public class ExperimentActivity extends Activity {
 	private String[] cachedChars = null;
 	
 	private void loadExCharsFromFile(int grade) {
-		cachedChars = null;
-		txtFileManager.toLoadChineseChars(grade);
+		if(!isLoadingChars) {
+			cachedChars = null;
+			isLoadingChars = true;
+			txtFileManager.toLoadChineseCharsAsync(grade);
+		}
 	}
+	
+	private boolean isLoadingChars = false;
 	
 	public void updateExChars(String[] exChars) {
 		String[] charsUsedForUpdate = null;
+		
+		if(cachedChars != null) {
+			isLoadingChars = false;
+		}
+		
 		if(exChars == null) {
 			if(cachedChars != null) {
 				charsUsedForUpdate = cachedChars;
 			}
 			else {
 				Log.d(DEBUG_TAG, "no available chars, updating exChars failed");
-				loadExCharsFromFile(mGrade);
+				//loadExCharsFromFile(mGrade);	
 				return;
 			}
 		}
 		else {
+			cachedChars = exChars;
 			charsUsedForUpdate = exChars;
 		}
 		
@@ -261,39 +329,98 @@ public class ExperimentActivity extends Activity {
 		return;
 	}
 	
-	private void previousPage() {
-		charIndex = charIndex - numCharsInAPage;
-		if(charIndex < 0) {
-			charIndex = 0;
+	private void nextPage() { //next page during experiment
+		if(cachedChars == null) { //it should not happen
+			return;
+		}
+		
+		charIndex = charIndex + numCharBoxesInAPage;
+		if(charIndex >= cachedChars.length) {
+			//transit to postExperimentView
+			showPostExperimentView();
+		}
+		else {
+			if(isPreloadingLogFiles) {
+				//it means last preloading task haven't been done.
+				//so load current log files and show progress dialog for user to wait
+				(new LoadActivityContentAsyncTask(
+						mContext, 
+						new CreateOrOpenLogFileTask(charIndex + 1, 0, numCharBoxesInAPage), 
+						null,
+						"開啟Log檔案中",
+						"請稍候")).execute();
+			}
+			else {
+				txtFileManager.rearrangeIndices(
+						Pair.create(Integer.valueOf(0), Integer.valueOf(numCharBoxesInAPage)), 
+						Pair.create(Integer.valueOf(numCharBoxesInAPage), Integer.valueOf(numCharBoxesInAPage * 2))
+				);
+			}
+			mWorkerThreadHandler.post(new CreateOrOpenLogFileTask(charIndex + numCharBoxesInAPage + 1, numCharBoxesInAPage, numCharBoxesInAPage));
 		}
 		updateExChars(null);
 	}
 	
-	private void nextPage() {
-		charIndex = charIndex + numCharsInAPage;
-		if(cachedChars != null && charIndex >= cachedChars.length) {
-			//switch to next testing set
-			
-		}
-		updateExChars(null);
+	private void showPostExperimentView() {
+		mPreOrPostInfo.setText("恭喜你完成了" + mGrade + "年級的評量，\n請按下一頁");
+		setContentView(mPreOrPostExperimentView);
+		prepareForNextTestingSet();
 	}
 	
-	private void nextTestingSet() {
+	private void prepareForNextTestingSet() {
+		//setSurfaceViewsAct(false);
 		cachedChars = null;
+		charIndex = 0;
+		testingSetIndex++; //next testing set
+		if(testingSetIndex < mUserGrade) { //testing end
+			mGrade = testingSetGradesSeq.get(testingSetIndex);
+			loadExCharsFromFile(mGrade);
+			//preload numCharBoxesInAPage
+			mWorkerThreadHandler.post(new CreateOrOpenLogFileTask(charIndex + 1, 0, numCharBoxesInAPage * 2));
+		}
+	}
+	
+	private boolean isPreloadingLogFiles = false;
+	
+	private class CreateOrOpenLogFileTask implements Runnable {
+
+		//charIndex is the order of certain char in Example Chars file
+		//charBoxIndex is the order of certain char on the experiment view
+		int mCharIndex;
+		int mCharBoxIndex;
+		int mNumFilesToCreateOrOpen;
+		
+		public CreateOrOpenLogFileTask(int charIndex, int charBoxIndex, int numFilesToCreateOrOpen) {
+			// TODO Auto-generated constructor stub
+			mCharIndex = charIndex;
+			mCharBoxIndex = charBoxIndex;
+			mNumFilesToCreateOrOpen = numFilesToCreateOrOpen;
+			isPreloadingLogFiles = true;
+		}
+		
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			for(int i = 0;i < mNumFilesToCreateOrOpen;i++) {
+				txtFileManager.createOrOpenLogFile(TxtFileManager.getCharLogFileName(mUserID, mGrade, mCharIndex + i), mCharBoxIndex + i);
+			}
+			isPreloadingLogFiles = false;
+		}
 		
 	}
 	
 	private void showPreExperimentView(int grade) {
 		if(testingSetIndex < testingSetGradesSeq.size()) {
-			mPreOrPostInfo.setText("即將開始測試" + grade + "年級的生字，\n準備好後請按下一步");
+			mPreOrPostInfo.setText("即將開始評量" + grade + "年級的生字，\n準備好後請按下一步");
 		}
 		else {
 			mPreOrPostNextPageButton.setVisibility(View.GONE);
 			mPreOrPostInfo.setText("評量到此結束，感謝你的參與");
+			endTheAppAfterCertainDuration(5000);
 		}
 		setContentView(mPreOrPostExperimentView);
 	}
-		
+	
 	private class BeforeViewShownTask implements Runnable {
 
 		private Context mContext;
@@ -308,9 +435,66 @@ public class ExperimentActivity extends Activity {
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-			
 			mExperimentView = inflater.inflate(R.layout.activity_experiment, null);
 			
+			FileDirInfo dirInfo = new FileDirInfo(FileType.Image, null, null);
+			imgFileManager = new ImgFileManager(dirInfo, mContext);
+			dirInfo.setFileType(FileType.Log, true);
+			dirInfo.setOtherInfo(String.valueOf(numCharBoxesInRow * numWritableCharBoxRows));
+			txtFileManager = new TxtFileManager(dirInfo, mContext);
+			
+			mPenTipInfo = (TextView)mExperimentView.findViewById(R.id.penTipInfo);
+			
+			// Set a button
+			mPenBtn = (ImageView) mExperimentView.findViewById(R.id.penBtn);
+			mPenBtn.setOnClickListener(mBtnOnClickListener);
+
+			mEraserBtn = (ImageView) mExperimentView.findViewById(R.id.eraserBtn);
+			mEraserBtn.setOnClickListener(mBtnOnClickListener);
+
+			mCleanBtn = (ImageView) mExperimentView.findViewById(R.id.cleanBtn);
+			mCleanBtn.setOnClickListener(mBtnOnClickListener);
+			
+			mNextPageBtn = (ImageView) mExperimentView.findViewById(R.id.nextPageBtn);
+			mNextPageBtn.setOnClickListener(mBtnOnClickListener);
+			
+			for(int i = 0;i < numWritableCharBoxRows;i++) {
+				for(int j = 0;j < numCharBoxesInRow;j++) {
+					mExampleCharsTextView[i][j] = (TextView)findViewByStr(mExperimentView, "exChar" + (i * numCharBoxesInRow + j + 1));
+				}
+			}
+			
+			selectButton(mPenBtn);
+			
+			mPreOrPostExperimentView = inflater.inflate(R.layout.activity_start_and_end, null);
+			mPreOrPostInfo = (TextView)mPreOrPostExperimentView.findViewById(R.id.text_pre_or_post_info);
+			mPreOrPostNextPageButton = (Button)mPreOrPostExperimentView.findViewById(R.id.button_experiment_next_step);
+			mPreOrPostNextPageButton.setOnClickListener(mBtnOnClickListener);
+		
+			
+			SharedPreferences userInfoPreference = mContext.getSharedPreferences(ProjectConfig.Key_Preference_UserInfo, Context.MODE_PRIVATE);
+			
+			if(userInfoPreference != null) {
+				mUserGrade = (int)userInfoPreference.getLong(ProjectConfig.Key_Preference_UserGrade, 1);
+				mUserDominantHand = userInfoPreference.getString(ProjectConfig.Key_Preference_UserDominantHand, ProjectConfig.rightHand);
+				mUserID = userInfoPreference.getString(ProjectConfig.Key_Preference_UserID, ProjectConfig.defaultUserID);
+			}
+			
+			testingSetGradesSeq = ProjectConfig.getTestingGradeSequence(mUserGrade);
+			testingSetIndex = -1;
+			
+			prepareForNextTestingSet();
+			
+			preOrPostInterfaceState = UIState.preExperimentTrial;
+			uiThreadHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					showPreExperimentView(mGrade);
+				}
+			});
+			
+			//do SpenSetUp-Related Work at last
 			/* Spen Dependent Part Start */
 			
 			// Initialize Spen
@@ -364,7 +548,6 @@ public class ExperimentActivity extends Activity {
 				}
 			}
 			
-			
 			uiThreadHandler.post(new Runnable() {
 				
 				@Override
@@ -374,26 +557,27 @@ public class ExperimentActivity extends Activity {
 					//we still need around 2 sec to run this part of code
 					for(int i = 0;i < numWritableCharBoxRows;i++) {
 						for(int j = 0;j < numCharBoxesInRow;j++) {
-
 							mCharBoxes[i][j] = new SpenSurfaceView(mContext);   
-							mCharBoxes[i][j].setClickable(true);
+							SpenSurfaceView surfaceView = mCharBoxes[i][j];
+							surfaceView.setClickable(true);
 							//to disable hover effect, just disable the hover effect in the system setting	
-							mCharBoxes[i][j].setTouchListener(sPenTouchListener);
-							mCharBoxes[i][j].setLongPressListener(new customizedLongPressedListener(mCharBoxes[i][j]));
-							mCharBoxes[i][j].setZoomable(false);
+							surfaceView.setTouchListener(new CustomizedSpenTouchListener(i * numCharBoxesInRow + j));
+							surfaceView.setLongPressListener(new customizedLongPressedListener(mCharBoxes[i][j]));
+							surfaceView.setZoomable(false);
 
 							//currently we disable finger's function. Maybe we could use it as eraser in the future.
-							mCharBoxes[i][j].setToolTypeAction(SpenSurfaceView.TOOL_FINGER, SpenSurfaceView.ACTION_NONE);
-							mCharBoxes[i][j].setToolTypeAction(SpenSurfaceView.TOOL_SPEN, SpenSurfaceView.ACTION_STROKE);
-							mCharBoxes[i][j].setPenSettingInfo(penInfo);
-							mCharBoxes[i][j].setEraserSettingInfo(eraserInfo);
-							((RelativeLayout)mExperimentView.findViewById(mWritableCharsContainerID[i][j])).addView(mCharBoxes[i][j]);
+							surfaceView.setToolTypeAction(SpenSurfaceView.TOOL_FINGER, SpenSurfaceView.ACTION_NONE);
+							surfaceView.setToolTypeAction(SpenSurfaceView.TOOL_SPEN, SpenSurfaceView.ACTION_STROKE);
+							surfaceView.setPenSettingInfo(penInfo);
+							surfaceView.setEraserSettingInfo(eraserInfo);
+							((RelativeLayout)mExperimentView.findViewById(mWritableCharsContainerID[i][j])).addView(surfaceView);
 							
-							mCharBoxes[i][j].setPageDoc(mSpenPageDocs[i][j], true);
-							viewModelMap.put(mCharBoxes[i][j], mSpenPageDocs[i][j]);
+							surfaceView.setPageDoc(mSpenPageDocs[i][j], true);
+							viewModelMap.put(surfaceView, mSpenPageDocs[i][j]);
 							
 						}
 					}
+					mFirstSurfaceView = mCharBoxes[0][0];
 				}
 			});
 			
@@ -405,75 +589,43 @@ public class ExperimentActivity extends Activity {
 			
 			/* Spen Dependent Part End */
 			
-			FileDirInfo dirInfo = new FileDirInfo(FileType.Image, null, null);
-			imgFileManager = new ImgFileManager(dirInfo, mContext);
-			dirInfo.setFileType(FileType.Log, true);
-			dirInfo.setOtherInfo(String.valueOf(numCharBoxesInRow * numWritableCharBoxRows));
-			txtFileManager = new TxtFileManager(dirInfo, mContext);
-			
-			mPenTipInfo = (TextView)mExperimentView.findViewById(R.id.penTipInfo);
-			
-			// Set a button
-			mPenBtn = (ImageView) mExperimentView.findViewById(R.id.penBtn);
-			mPenBtn.setOnClickListener(mBtnOnClickListener);
-
-			mEraserBtn = (ImageView) mExperimentView.findViewById(R.id.eraserBtn);
-			mEraserBtn.setOnClickListener(mBtnOnClickListener);
-
-			mCleanBtn = (ImageView) mExperimentView.findViewById(R.id.cleanBtn);
-			mCleanBtn.setOnClickListener(mBtnOnClickListener);
-			
-			mNextPageBtn = (ImageView) mExperimentView.findViewById(R.id.nextPageBtn);
-			mNextPageBtn.setOnClickListener(mBtnOnClickListener);
-			
-			for(int i = 0;i < numWritableCharBoxRows;i++) {
-				for(int j = 0;j < numCharBoxesInRow;j++) {
-					mExampleCharsTextView[i][j] = (TextView)findViewByStr(mExperimentView, "exChar" + (i * numCharBoxesInRow + j + 1));
-				}
-			}
-			
-			selectButton(mPenBtn);
-			
-			mPreOrPostExperimentView = inflater.inflate(R.layout.activity_start_and_end, null);
-			mPreOrPostInfo = (TextView)mPreOrPostExperimentView.findViewById(R.id.text_pre_or_post_info);
-			mPreOrPostNextPageButton = (Button)mPreOrPostExperimentView.findViewById(R.id.button_experiment_next_step);
-			mPreOrPostNextPageButton.setOnClickListener(mBtnOnClickListener);
-		
-			
-			SharedPreferences userInfoPreference = mContext.getSharedPreferences(ProjectConfig.Key_Preference_UserInfo, Context.MODE_PRIVATE);
-			
-			mUserGrade = 1;
-			mUserDominantHand = ProjectConfig.rightHand;
-			
-			if(userInfoPreference != null) {
-				mUserGrade = (int)userInfoPreference.getLong(ProjectConfig.Key_Preference_UserGrade, 1);
-				mUserDominantHand = userInfoPreference.getString(ProjectConfig.Key_Preference_UserDominantHand, ProjectConfig.rightHand);
-			}
-			
-			testingSetGradesSeq = ProjectConfig.getTestingGradeSequence(mUserGrade);
-			
-			testingSetIndex = 0;
-			charIndex = 0;
-			preOrPostInterfaceState = UIState.preExperimentTrial;
-			mGrade = testingSetGradesSeq.get(testingSetIndex);
-			
-			uiThreadHandler.post(new Runnable() {
-				@Override
-				public void run() {
-					// TODO Auto-generated method stub
-					showPreExperimentView(mGrade);
-				}
-			});
-			
 		}
 		
 	}
 	
-	private View findViewByStr(View viewToSearchIn, String name) {
+	private void captureSpenSurfaceView(int row, int col, String fileName) {	
+		Bitmap imgBitmap = mCharBoxes[row][col].captureCurrentView(true);
+		imgFileManager.saveBMP(imgBitmap, fileName);
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
 		
+		if(mLBCManager != null) {
+			mLBCManager.unregisterReceiver(broadcastReceiver);
+		}
+		
+		if (mPenSettingView != null) {
+			mPenSettingView.close();
+		}
+		if (mEraserSettingView != null) {
+			mEraserSettingView.close();
+		}
+
+		if (mSpenNoteDoc != null) {
+			try {
+				mSpenNoteDoc.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			mSpenNoteDoc = null;
+		}
+	};
+	
+	private View findViewByStr(View viewToSearchIn, String name) {
 		int resId = mRes.getIdentifier(name, "id", packageName);
 		return viewToSearchIn.findViewById(resId);
-		
 	}
 	
 	private void initSettingInfo2() {
@@ -542,6 +694,14 @@ public class ExperimentActivity extends Activity {
 
 	}
 	
+	private void setSurfaceViewsAct(boolean enable) {
+		for(int i = 0;i < numWritableCharBoxRows;i++) {
+			for(int j = 0;j < numCharBoxesInRow;j++) {
+				mCharBoxes[i][j].setActivated(enable);
+			}
+		}
+	}
+	
 	private void selectButton(View v) {
 		// Enable or disable the button according to the current mode.
 		mPenBtn.setSelected(false);
@@ -559,33 +719,40 @@ public class ExperimentActivity extends Activity {
 		mEraserBtn.setEnabled(clickable);
 	}
 
-	private void captureSpenSurfaceView(int row, int col, String fileName) {	
-		Bitmap imgBitmap = mCharBoxes[row][col].captureCurrentView(true);
-		imgFileManager.saveBMP(imgBitmap, fileName);
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// TODO Auto-generated method stub
+		MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.experiment_activity_actions, menu);
+		return super.onCreateOptionsMenu(menu);
 	}
 	
 	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		
-		if(mLBCManager != null) {
-			mLBCManager.unregisterReceiver(broadcastReceiver);
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+		switch (item.getItemId()) {
+			case R.id.menuitem_connect_bluetooth:
+				break;
+			case R.id.menuitem_show_bottom_bar:
+				break;
+			default:
+				return super.onOptionsItemSelected(item);
 		}
-		
-		if (mPenSettingView != null) {
-			mPenSettingView.close();
-		}
-		if (mEraserSettingView != null) {
-			mEraserSettingView.close();
-		}
-
-		if (mSpenNoteDoc != null) {
-			try {
-				mSpenNoteDoc.close();
-			} catch (Exception e) {
-				e.printStackTrace();
+		return true;
+	}
+	
+	private void endTheAppAfterCertainDuration(long delayMillis) {
+		uiThreadHandler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(getApplicationContext(), UnderlinesStyledFragmentActivity.class);
+				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				intent.putExtra("EXIT", true);
+				startActivity(intent);
 			}
-			mSpenNoteDoc = null;
-		}
-	};
+		}, delayMillis);
+	}
+	
 }

@@ -16,17 +16,19 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-public class BluetoothClientConnector extends Service{
+import java.lang.StringBuffer;
+
+public class BluetoothClientConnectService extends Service{
 	
-	public final static String debug_tag = BluetoothClientConnector.class.getName();
+	public final static String debug_tag = BluetoothClientConnectService.class.getName();
 	private final static String action_tag = ".act";
 	private final static String msg_tag = ".msg";
 	
 	public final static String DeviceAddrKey = "BTDeviceAddress";
-	public final static String Action_test_connection = BluetoothClientConnector.class.getName() + action_tag + ".test_connection";
-	public final static String Action_start_receiving_data = BluetoothClientConnector.class.getName() + action_tag + ".start_receiving_data";
+	public final static String Action_test_connection = BluetoothClientConnectService.class.getName() + action_tag + ".test_connection";
+	public final static String Action_start_receiving_data = BluetoothClientConnectService.class.getName() + action_tag + ".start_receiving_data";
 	public final static String update_info = "update_info";
-	public final static String Msg_update_info = BluetoothClientConnector.class.getName() + msg_tag + "." + update_info; 
+	public final static String Msg_update_info = BluetoothClientConnectService.class.getName() + msg_tag + "." + update_info; 
 	
 	public final static String MsgBundleKey = "extraDataBundle";
 	public final static String Key_Info_identifier = update_info + ".identifier";
@@ -41,7 +43,6 @@ public class BluetoothClientConnector extends Service{
 	private final static int headerByte1 = 0x0D;
 	private final static int headerByte2 = 0x0A;
 	
-	//private BluetoothAdapter mBTAdapter = null;
 	private BluetoothManager mBTManager = null;
 	private BluetoothSocket mSocket = null;
 	private BluetoothDevice mDevice = null;
@@ -50,40 +51,7 @@ public class BluetoothClientConnector extends Service{
 	private byte[] dataBuffer;
 	private boolean toTerminateConnection = false;
 	private LocalBroadcastManager mLBCManager = null;
-	/*
-	public void startDataReceiving() {
-		if(mDevice != null) {
-			mWorkHandler.post(dataReceivingTask);
-		}
-		else {
-			Log.d(debug_tag, "device is null, failed to do this task");
-		}
-	}
 	
-	public void testConnection() {
-		if(mDevice != null) {
-			mWorkHandler.post(testConnectionTask);
-		}
-		else {
-			Log.d(debug_tag, "device is null, failed to do this task");
-		}
-	}
-	
-	public void toTerminateThreadAndConnection() {
-		toTerminateConnection = true;
-	}
-	
-	public BluetoothClientConnector(BluetoothDevice device, Context context) {
-		if(device != null) {
-			initThreadAndHandler();
-			mDevice = device;
-			dataBuffer = new byte[bufferSize];
-		}
-		else {
-			Log.d(debug_tag, "device is null, maybe failed to connect later");
-		}
-	}
-	*/
 	
 	@Override
 	public void onCreate() {
@@ -171,8 +139,8 @@ public class BluetoothClientConnector extends Service{
 	private final IBinder theOnlyBinder = new LocalBinder();
 	
 	public class LocalBinder extends Binder {
-		BluetoothClientConnector getService() {
-			return BluetoothClientConnector.this; //I think it means to return first initiated instance
+		BluetoothClientConnectService getService() {
+			return BluetoothClientConnectService.this; //I think it means to return first initiated instance
 		}
 	}
 	
@@ -275,8 +243,18 @@ public class BluetoothClientConnector extends Service{
 	};
 	
 	private Runnable dataReceivingTask = new Runnable() { 
+		private final static String debug_tag = "dataReceivingTask";
+		private StringBuffer stringBuffer = new StringBuffer();
 		
 		private void parsingDataAndStored(byte[] buffer) {
+			stringBuffer.setLength(0);
+			stringBuffer.append((int)((buffer[0]) & 0xFF));
+			int numBytesInBuffer = buffer.length;
+			for(int index = 1;index < numBytesInBuffer;index++) {
+				stringBuffer.append(',');
+				stringBuffer.append(buffer[index]);
+			}
+			Log.d(debug_tag,stringBuffer.toString());
 			
 		}
 		
@@ -332,7 +310,6 @@ public class BluetoothClientConnector extends Service{
 					startReceivingData();
 				}
 			}
-			
 		}
 	};
 	

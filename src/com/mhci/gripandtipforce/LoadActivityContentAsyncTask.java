@@ -11,22 +11,47 @@ public class LoadActivityContentAsyncTask extends AsyncTask<Void, Integer, Void>
 	private ProgressDialog progressDialog;
 	private Runnable mTaskToRunInBG;
 	private Runnable mPostTaskAfterBGTask;
-	private final static String dialogTitle = "讀取中...";
-	private final static String dialogMessage = "下一個畫面需要些讀取時間,請稍候";
+	private final static String defaultDialogTitle = "讀取中...";
+	private final static String defaultDialogMessage = "下一個畫面需要些讀取時間,請稍候";
+	private String userDefinedTitle = null;
+	private String userDefinedMsg = null;
 	
 	public LoadActivityContentAsyncTask(Context context,Runnable taskToRunInBG,Runnable postTaskAfterBGTask) {
 		// TODO Auto-generated constructor stub
 		mContext = context;
 		mTaskToRunInBG = taskToRunInBG;
+		mPostTaskAfterBGTask = postTaskAfterBGTask;	
+	}
+	
+	public LoadActivityContentAsyncTask(Context context,Runnable taskToRunInBG,Runnable postTaskAfterBGTask,String title,String msg) {
+		// TODO Auto-generated constructor stub
+		mContext = context;
+		mTaskToRunInBG = taskToRunInBG;
 		mPostTaskAfterBGTask = postTaskAfterBGTask;
-		
+		userDefinedMsg = msg;
+		userDefinedTitle = title;
 	}
 	
 	@Override
 	protected void onPreExecute() {
 		// TODO Auto-generated method stub
 		super.onPreExecute();
-		progressDialog = ProgressDialog.show(mContext,dialogTitle,dialogMessage, true, false);
+		String msg;
+		if(userDefinedMsg != null) {
+			msg = userDefinedMsg;
+		}
+		else {
+			msg = defaultDialogMessage;
+		}
+		String title;
+		if(userDefinedTitle != null) {
+			title = userDefinedTitle;
+		}
+		else {
+			title = defaultDialogTitle;
+		}
+		
+		progressDialog = ProgressDialog.show(mContext,title,msg, true, false);
 		
 	}
 	
@@ -47,7 +72,6 @@ public class LoadActivityContentAsyncTask extends AsyncTask<Void, Integer, Void>
 			mPostTaskAfterBGTask.run();
 		}
 		progressDialog.dismiss();
-		
 		
 	}
 

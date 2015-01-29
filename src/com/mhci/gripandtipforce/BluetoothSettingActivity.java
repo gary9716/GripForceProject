@@ -38,7 +38,6 @@ public class BluetoothSettingActivity extends Activity{
 	private BluetoothManager btManager;
 	private TextView mLastSelectedBT = null;
 	private TextView mCurrentSelectedBT = null;
-	//private Button testConnectionButton = null;
 	private Button nextPageButton = null;
 	
 	//data
@@ -63,7 +62,9 @@ public class BluetoothSettingActivity extends Activity{
 		btManager = new BluetoothManager(this, btEventReceiver, mDisplayAdapter);
 		
 		mCurrentSelectedBT = (TextView)findViewById(R.id.text_currently_selected_device);
+		mCurrentSelectedBT.setText(emptyStateName);
 		mLastSelectedBT = (TextView)findViewById(R.id.text_lastly_selected_device);
+		mLastSelectedBT.setText(emptyStateName);
 		
 		mLastSelectedBT.addTextChangedListener(textChangedListener);
 		mCurrentSelectedBT.addTextChangedListener(textChangedListener);
@@ -75,7 +76,7 @@ public class BluetoothSettingActivity extends Activity{
 		//testConnectionButton = (Button)findViewById(R.id.button_test_connection);
 		//testConnectionButton.setOnClickListener(buttonListener);
 		
-		IntentFilter intentFilter = new IntentFilter(BluetoothClientConnector.Msg_update_info);
+		IntentFilter intentFilter = new IntentFilter(BluetoothClientConnectService.Msg_update_info);
 		mLBCManager = LocalBroadcastManager.getInstance(mContext);
 		mLBCManager.registerReceiver(infoReceiver, intentFilter);
 		
@@ -240,10 +241,10 @@ public class BluetoothSettingActivity extends Activity{
 		public void onReceive(Context context, Intent intent) {
 			// TODO Auto-generated method stub
 			String action = intent.getAction();
-			if(action.equals(BluetoothClientConnector.Msg_update_info)) {
-				Bundle extraData = intent.getBundleExtra(BluetoothClientConnector.MsgBundleKey);
-				if(extraData.getString(BluetoothClientConnector.Key_Info_identifier).equals(BluetoothClientConnector.Info_testConnection)) {
-					Toast.makeText(mContext, extraData.getString(BluetoothClientConnector.Key_Info_content), Toast.LENGTH_SHORT).show();
+			if(action.equals(BluetoothClientConnectService.Msg_update_info)) {
+				Bundle extraData = intent.getBundleExtra(BluetoothClientConnectService.MsgBundleKey);
+				if(extraData.getString(BluetoothClientConnectService.Key_Info_identifier).equals(BluetoothClientConnectService.Info_testConnection)) {
+					Toast.makeText(mContext, extraData.getString(BluetoothClientConnectService.Key_Info_content), Toast.LENGTH_SHORT).show();
 				}
 			}
 		}

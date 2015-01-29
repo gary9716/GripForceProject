@@ -11,7 +11,12 @@ public class UnderlinesStyledFragmentActivity extends FragmentActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //code for close the app and clean up all activities
+        if(getIntent().getBooleanExtra("EXIT", false)) {
+        		finish();
+        }
+        
         setContentView(R.layout.activity_swipableview);
-
+        
     }
 }
