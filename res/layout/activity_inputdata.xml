@@ -1,49 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/LinearLayout1"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeLayout1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical" >
 
-    <RelativeLayout
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="112dp"
+        android:src="@drawable/title2" />
+
+    <fragment
+        android:id="@+id/input_data_fragment"
+        android:name="com.mhci.gripandtipforce.InputDataFragment"
         android:layout_width="match_parent"
-        android:layout_height="200dp" 
-        android:layout_weight="0">
+        android:layout_height="700dp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/imageView1" />
 
-        <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:src="@drawable/title2" />
+    <Button
+        android:id="@+id/button_complete_personal_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="70dp"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:text="下一步"
+        android:textSize="@dimen/bt_setting_text_size" />
 
-    </RelativeLayout>
-	
-    <RelativeLayout
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:layout_weight="1">
-    
-	    <fragment
-	        android:id="@+id/fragment1"
-	        android:name="com.mhci.gripandtipforce.InputDataFragment"
-	        android:layout_width="match_parent"
-	        android:layout_height="match_parent" />
-	
-    </RelativeLayout>
-    
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="300dp" 
-        android:layout_weight="0">
-
-        <Button
-            android:id="@+id/table_text_bt_setting"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="確認" />
-
-    </RelativeLayout>
-
-</LinearLayout>
+</RelativeLayout>

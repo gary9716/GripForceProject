@@ -11,7 +11,7 @@ import android.content.Context;
 import android.util.Log;
 
 public class FileManager {
-	public final static String debug_tag = "FileManager";
+	public final static String debug_tag = "CustomizedFileManager";
 	private final static String userFileConfigsPostfixname = "_userFileConfig";
 	private File internalDir = null; 
 	private HashMap<String, Integer> mUserFileConfig = null;

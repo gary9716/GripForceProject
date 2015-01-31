@@ -216,5 +216,8 @@ public class BluetoothManager extends BroadcastReceiver{
 		return mBTAdapter.getBondedDevices().contains(device);
 	}
 
+	public boolean isBTEnabled() {
+		return mBTAdapter.isEnabled();
+	}
 
 }

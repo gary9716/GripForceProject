@@ -8,10 +8,10 @@
         android:showAsAction="never"
         android:title="顯示或隱藏系統列"/>
     <item
-        android:id="@+id/menuitem_connect_bluetooth"
+        android:id="@+id/menuitem_end_application"
         android:orderInCategory="101"
         android:showAsAction="never"
-        android:title="連接藍芽"/>
+        android:title="結束應用程式"/>
     
 
 </menu>

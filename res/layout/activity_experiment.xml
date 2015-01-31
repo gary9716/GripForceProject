@@ -59,7 +59,7 @@
         android:layout_height="match_parent" >
 
         <LinearLayout
-            android:id="@+id/ex_chars_group"
+            android:id="@+id/ex_chars_group_5_chars"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -225,6 +225,17 @@
                 android:text="penTipData"
                 android:textSize="20sp" />
         </RelativeLayout>
+
+        <TextView
+            android:id="@+id/text_bt_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginRight="49dp"
+            android:layout_marginTop="29dp"
+            android:text="Large Text"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
     </RelativeLayout>
 

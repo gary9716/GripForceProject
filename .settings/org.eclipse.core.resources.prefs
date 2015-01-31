@@ -6,5 +6,6 @@ encoding//src/com/mhci/gripandtipforce/BluetoothSettingActivity.java=UTF-8
 encoding//src/com/mhci/gripandtipforce/ExperimentActivity.java=UTF-8
 encoding//src/com/mhci/gripandtipforce/ImgFileManager.java=UTF-8
 encoding//src/com/mhci/gripandtipforce/InputDataActivity.java=UTF-8
-encoding//src/com/mhci/gripandtipforce/LoadActivityContentAsyncTask.java=UTF-8
+encoding//src/com/mhci/gripandtipforce/ProjectConfig.java=UTF-8
+encoding//src/com/mhci/gripandtipforce/TaskRunnerAndDisplayProgressDialogAsyncTask.java=UTF-8
 encoding//src/com/mhci/gripandtipforce/TxtFileManager.java=UTF-8

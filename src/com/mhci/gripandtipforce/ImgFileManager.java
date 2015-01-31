@@ -53,11 +53,7 @@ public class ImgFileManager extends FileManager{
 	
 	public void saveBMP(Bitmap bmp, String fileName) {
 		SaveBMPTask task = new SaveBMPTask(bmp, fileName);
-		if(mThreadHandler == null) {
-			initThreadAndHandler();
-		}
 		mThreadHandler.post(task);
-		
 	}
 	
 	private class SaveBMPTask implements Runnable {
@@ -76,16 +72,16 @@ public class ImgFileManager extends FileManager{
 			// TODO Auto-generated method stub
 			FileOutputStream out = null;
 			try {
-				String filePath = null;
+				File file = null;
 				if(imgDir != null) {
-					filePath = getNonDuplicateFileName(imgDir.getPath(), fileNameForSaving);
+					file = new File(imgDir.getPath(), fileNameForSaving);
 				}
 				else {
 					Toast.makeText(mContext, "Image Directory doesn't exist, failed to save image", Toast.LENGTH_LONG).show();
 					return;
 				}
 				
-				out = new FileOutputStream(filePath);
+				out = new FileOutputStream(file);
 				mBitmapToSave.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
 			    // PNG is a lossless format, the compression factor (100) is ignored
 			} catch (Exception e) {
@@ -103,6 +99,10 @@ public class ImgFileManager extends FileManager{
 			}
 		}
 		
+	}
+	
+	public static String getImgFileName(String userID,int grade,int charIndex) {
+		return userID + "_" + grade + "_" + (charIndex + 1);
 	}
 	
 }

@@ -1,5 +1,8 @@
 package com.mhci.gripandtipforce;
 
+import android.R.integer;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -25,15 +28,19 @@ public class InputDataFragment extends Fragment {
 		return viewToSearchIn.findViewById(resId);
 		
 	}
-	
+	private SharedPreferences preferences;
 	private TextView[] fieldViews = null;
+	
+	private void updateIDView(View fragmentView, String userID) {
+		((TextView)fragmentView.findViewById(R.id.Number_ID)).setText(userID);
+	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		packageName = getActivity().getPackageName();
-		
+		preferences = getActivity().getSharedPreferences(ProjectConfig.Key_Preference_UserInfo, Context.MODE_PRIVATE);
 	}
 	
 	@Override
@@ -64,7 +71,15 @@ public class InputDataFragment extends Fragment {
 			fieldViews[i].setWidth(maxWidth);
 		}
 		
-		
+		String userID = preferences.getString(ProjectConfig.Key_Preference_UserID, null);
+		int userIDInNum = -1;
+		if(userID == null) { //first time
+			userIDInNum = 1;
+		}
+		else {
+			userIDInNum = Integer.valueOf(userID) + 1;
+		}
+		updateIDView(fragmentView, userIDInNum + "");
 		return fragmentView;
 	}
 }

@@ -1,6 +1,7 @@
 package com.mhci.gripandtipforce;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -22,16 +23,16 @@ import android.util.Pair;
 import android.widget.Toast;
 
 public class TxtFileManager extends FileManager{
-	private final static String DEBUG_TAG = TxtFileManager.class.getName();
+	private final static String DEBUG_TAG = "TxtFileManager";
 	private File mFileDir = null;
 	private FileType mFileType = FileType.Log;
 	private Context mContext;
-	private PrintWriter[] pwArray;
+	private BufferedWriter[] writerArray;
 	private LocalBroadcastManager mLBCManager = null;
 	
-	private void initArray(PrintWriter[] array) {
-		for(PrintWriter pw : array) {
-			pw = null;
+	private void initArray(BufferedWriter[] array) {
+		for(BufferedWriter writer : array) {
+			writer = null;
 		}
 	}
 	
@@ -51,16 +52,20 @@ public class TxtFileManager extends FileManager{
 		
 		switch(mFileType) {
 			case Log:
-				pwArray = new PrintWriter[(new Integer(dirInfo.getOtherInfo())).intValue() * 2];
+				int numOfInstanceToAlloc = 1;
+				if(dirInfo.getOtherInfo() != null) {
+					numOfInstanceToAlloc = (new Integer(dirInfo.getOtherInfo())).intValue();
+				}
+				writerArray = new BufferedWriter[numOfInstanceToAlloc];
 				break;
 			case PersonalInfo:
-				pwArray = new PrintWriter[1];
+				writerArray = new BufferedWriter[1];
 				break;
 			default:
 				break;
 		}
 		
-		initArray(pwArray);
+		initArray(writerArray);
 		
 		try {
 			mFileDir = new File(dirInfo.getDirPath());
@@ -77,13 +82,13 @@ public class TxtFileManager extends FileManager{
 		}
 	}
 	
-	private PrintWriter createOrOpenTxtFile(String fileName) {
+	private BufferedWriter createOrOpenTxtFile(String fileName) {
 		if(mFileDir == null) {
 			Toast.makeText(mContext, "txtDir is null ,failed to create log", Toast.LENGTH_LONG).show();
 			return null;
 		}
 		
-		PrintWriter pw;
+		BufferedWriter writer;
 		try {
 			//File txtFile = new File(mFileDir, getNonDuplicateFileName(mFileDir.getPath(), fileName));
 			File txtFile = new File(mFileDir, fileName);
@@ -93,36 +98,67 @@ public class TxtFileManager extends FileManager{
 					return null;
 				}
 			}
-			pw = new PrintWriter(new FileWriter(txtFile,true));
+			writer = new BufferedWriter(new FileWriter(txtFile,true));
 		}
 		catch(Exception e) {
-			pw = null;
+			writer = null;
 			Toast.makeText(mContext, "creating or openning txt file failed", Toast.LENGTH_LONG).show();
 		}
 		
-		return pw;
+		return writer;
 	}
 	
-	public void appendLogWithNewlineAsync(int charBoxIndex, String data) {
-		AppendLogTask task = new AppendLogTask(charBoxIndex, data);
+	/*
+	public void appendLogWithNewlineAsync(int arrayIndex, String data) {
+		AppendLogTask task = new AppendLogTask(arrayIndex, data);
+		Log.d(debug_tag, "it's going to append data in index:" + arrayIndex + ",data:" + data);
 		mThreadHandler.post(task);
+	}
+	*/
+	
+	
+	public void appendLogWithNewlineSync(int arrayIndex, String data) {
+		// TODO Auto-generated method stub
+		try {
+			writerArray[arrayIndex].write(data);
+			writerArray[arrayIndex].newLine();
+			//writerArray[arrayIndex].flush();
+		}
+		catch(Exception e) {
+			Log.d(debug_tag,"exception in AppendLogTask,e:" + e.getLocalizedMessage());
+			//Log.d(DEBUG_TAG,e.getLocalizedMessage());
+		}
+		//Log.d(debug_tag,"done append log");
+		
 	}
 	
 	//fileIndex is used for indexing in dictionary 
-	public boolean createOrOpenLogFile(String fileName, int charBoxIndex) {
-		PrintWriter pw = createOrOpenTxtFile(fileName);
-		if(pw == null) {
+	public boolean createOrOpenLogFileSync(String fileName, int arrayIndex) {
+		if(arrayIndex >= writerArray.length) {
+			Log.d(debug_tag, "indexing out of bound in createOrOpenLogFileSync");
 			return false;
 		}
-		if(charBoxIndex >= pwArray.length) {
-			Log.d(debug_tag, "indexing out of bound");
+		
+		BufferedWriter writer = createOrOpenTxtFile(fileName);
+		if(writer == null) {
 			return false;
 		}
-		closeFile(charBoxIndex);
-		pwArray[charBoxIndex] = pw;
+		
+//		if(!pw.equals(pwArray[arrayIndex])) {
+//			try {
+//				pwArray[arrayIndex].close();
+//			}
+//			catch(Exception e) {
+//				
+//			}
+//		}
+		
+		closeFile(arrayIndex);
+		writerArray[arrayIndex] = writer;
 		return true;
 	}
 	
+	//don't forget to close files before call this function
 	public boolean rearrangeIndices(Pair<Integer, Integer> toIndices,Pair<Integer, Integer> fromIndices) {
 		int[] toIndicesArray = new int[]{toIndices.first,toIndices.second};
 		int[] fromIndicesArray = new int[]{fromIndices.first,fromIndices.second};
@@ -131,9 +167,11 @@ public class TxtFileManager extends FileManager{
 			return false;
 		}
 		for(int i = 0;i < numFromIndicesToMap;i++) {
-			pwArray[toIndicesArray[0] + i] = pwArray[fromIndicesArray[0] + i];
-			pwArray[fromIndicesArray[0] + i] = null;
-			if(pwArray[toIndicesArray[0] + i] == null) {
+			int toIndex = toIndicesArray[0] + i;
+			int fromIndex = fromIndicesArray[0] + i;
+			writerArray[toIndex] = writerArray[fromIndex];
+			writerArray[fromIndex] = null;
+			if(writerArray[toIndex] == null) {
 				return false;
 			}
 		}
@@ -141,16 +179,17 @@ public class TxtFileManager extends FileManager{
 		
 	}
 	
-	private void closeFile(int fileIndex) {
-		PrintWriter pw = pwArray[fileIndex];
-		if(pw != null) {
+	public void closeFile(int arrayIndex) {
+		BufferedWriter writer = writerArray[arrayIndex];
+		if(writer != null) {
 			try {
-				pw.close();
+				writer.flush();
+				writer.close();
 			}
 			catch(Exception e) {
 				Log.d(DEBUG_TAG, e.getLocalizedMessage());
 			}
-			pwArray[fileIndex] = null;
+			writerArray[arrayIndex] = null;
 		}
 	}
 	
@@ -164,10 +203,10 @@ public class TxtFileManager extends FileManager{
 	
 	private class AppendLogTask implements Runnable {
 		private String mData;
-		private int mFileIndex;
+		private int mArrayIndex;
 		
-		public AppendLogTask(int fileIndex, String data) {
-			mFileIndex = fileIndex;
+		public AppendLogTask(int arrayIndex, String data) {
+			mArrayIndex = arrayIndex;
 			mData = data;
 		}
 
@@ -175,19 +214,12 @@ public class TxtFileManager extends FileManager{
 		public void run() {
 			// TODO Auto-generated method stub
 			try {
-				pwArray[mFileIndex].println(mData);
-//				PrintWriter pw = pwArray[mFileIndex];
-				
-//				if(pw != null) {
-//					pw.println(mData);
-//				}
-//				else {
-//					//calling this function in non UI thread maybe dangerous?
-//					Toast.makeText(mContext, "file haven't been successfully created or opened, writing file failed", Toast.LENGTH_SHORT).show();
-//				}
+				writerArray[mArrayIndex].write(mData);
+				writerArray[mArrayIndex].newLine();
 			}
 			catch(Exception e) {
-				Log.d(DEBUG_TAG,e.getLocalizedMessage());
+				Log.d(DEBUG_TAG,"exception in AppendLogTask,e:" + e.getLocalizedMessage());
+				//Log.d(DEBUG_TAG,e.getLocalizedMessage());
 			}
 		}
 		
@@ -199,6 +231,10 @@ public class TxtFileManager extends FileManager{
 	
 	public void toLoadChineseCharsSync(int grade) {
 		(new LoadChineseCharsTask(grade)).run();
+	}
+	
+	public Runnable getLoadChineseCharTask(int grade) {
+		return (new LoadChineseCharsTask(grade));
 	}
 	
 	private class LoadChineseCharsTask implements Runnable {
@@ -270,26 +306,27 @@ public class TxtFileManager extends FileManager{
 			}
 		}
 		
+		
 		String[] buffer = new String[container.size()];
+		//Log.d(debug_tag,"numCharsHaveBeenLoaded:" + buffer.length + ",grade:" + grade);
 		return container.toArray(buffer);
 	}
 	
-	public static String getCharLogFileName(String userID, int grade, int charIndex) {
-		return userID + "_" + grade + "_" + charIndex;
+	public static String getTipForceLogFileName(String userID, int grade, int charIndex) {
+		return ProjectConfig.tipForceLogPrefix + userID + "_" + grade + "_" + (charIndex + 1);
+	}
+	
+	public static String getGripForceLogFileName(String userID) {
+		return ProjectConfig.gripForceLogPrefix + userID;
 	}
 	
 	@Override
 	protected void finalize() throws Throwable {
 		// TODO Auto-generated method stub
 		super.finalize();
-		if(pwArray != null) {
-			for(PrintWriter pw : pwArray) {
-				try {
-					pw.close();
-				}
-				catch(Exception e) {
-					
-				}
+		if(writerArray != null) {
+			for(int i = 0;i < writerArray.length;i++) {
+				closeFile(i);
 			}
 		}
 	}

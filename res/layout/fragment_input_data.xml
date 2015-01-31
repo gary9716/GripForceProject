@@ -9,14 +9,17 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/fieldBottomMargin"
         android:orientation="horizontal" >
 
         <TextView
             android:id="@+id/Disp_1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="姓名："
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:layout_marginRight="@dimen/fieldNameRightMargin"
+            android:text="姓名"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/fieldTextSize" />
 
         <EditText
             android:id="@+id/EditText_Name"
@@ -25,24 +28,29 @@
             android:layout_weight="1"
             android:ems="10"
             android:inputType="textPersonName"
-            android:minHeight="40dp" >
+            android:minHeight="40dp"
+            android:textSize="@dimen/fieldTextSize" >
+
         </EditText>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/fieldBottomMargin"
         android:orientation="horizontal" >
 
         <TextView
             android:id="@+id/Disp_2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="性別："
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:layout_marginRight="@dimen/fieldNameRightMargin"
+            android:text="性別"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/fieldTextSize" />
 
         <RadioGroup
-            android:id="@+id/RadioGroup_Gender"
+            android:id="@+id/RadioGroup_gender"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal" >
@@ -51,35 +59,182 @@
                 android:id="@+id/RadioButton_Male"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/radioButtonRightMargin"
                 android:checked="true"
-                android:text="男" />
+                android:text="男"
+                android:textSize="@dimen/fieldTextSize" />
 
             <RadioButton
                 android:id="@+id/RadioButton_Female"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="女" />
+                android:text="女"
+                android:textSize="@dimen/fieldTextSize" />
+
         </RadioGroup>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/fieldBottomMargin"
         android:orientation="horizontal" >
 
         <TextView
             android:id="@+id/Disp_3"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="生日："
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:layout_marginRight="@dimen/fieldNameRightMargin"
+            android:text="生日"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/fieldTextSize" />
 
         <com.ui.customizedwidgets.DateDisplayPicker
             android:id="@+id/customizedClass_BirthDayDatePicker"
             style="@android:style/Widget.Holo.Spinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="請點擊並選擇你的生日日期" />
+            android:hint="請點擊並選擇你的生日日期"
+            android:textSize="@dimen/fieldTextSize" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/fieldBottomMargin"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/Disp_4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/fieldNameRightMargin"
+            android:text="慣用手"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/fieldTextSize" />
+
+        <RadioGroup
+            android:id="@+id/RadioGroup_dominant_hand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <RadioButton
+                android:id="@+id/RadioButton02"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/radioButtonRightMargin"
+                android:checked="true"
+                android:text="@string/leftHand"
+                android:textSize="@dimen/fieldTextSize" />
+
+            <RadioButton
+                android:id="@+id/RadioButton01"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/rightHand"
+                android:textSize="@dimen/fieldTextSize" />
+
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/fieldBottomMargin"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/Disp_5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/fieldNameRightMargin"
+            android:text="年級"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/fieldTextSize" />
+
+        <RadioGroup
+            android:id="@+id/RadioGroup_grades"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <RadioButton
+                android:id="@+id/button_firstGrade"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/radioButtonRightMargin"
+                android:checked="true"
+                android:text="1"
+                android:textSize="@dimen/fieldTextSize" />
+
+            <RadioButton
+                android:id="@+id/button_secondGrade"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/radioButtonRightMargin"
+                android:text="2"
+                android:textSize="@dimen/fieldTextSize" />
+
+            <RadioButton
+                android:id="@+id/button_thirdGrade"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/radioButtonRightMargin"
+                android:text="3"
+                android:textSize="@dimen/fieldTextSize" />
+
+            <RadioButton
+                android:id="@+id/button_forthGrade"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/radioButtonRightMargin"
+                android:text="4"
+                android:textSize="@dimen/fieldTextSize" />
+
+            <RadioButton
+                android:id="@+id/button_fifthGrade"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/radioButtonRightMargin"
+                android:text="5"
+                android:textSize="@dimen/fieldTextSize" />
+
+            <RadioButton
+                android:id="@+id/button_sixthGrade"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="6"
+                android:textSize="@dimen/fieldTextSize" />
+
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/fieldBottomMargin"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/Disp_6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/fieldNameRightMargin"
+            android:text="居住城市"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/fieldTextSize" />
+
+        <EditText
+            android:id="@+id/EditText_City"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:textSize="@dimen/fieldTextSize" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -91,119 +246,10 @@
             android:id="@+id/Disp_7"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="慣用手："
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <RadioGroup
-            android:id="@+id/RadioGroup_hand"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
-
-            <RadioButton
-                android:id="@+id/RadioButton02"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="左" />
-
-            <RadioButton
-                android:id="@+id/RadioButton01"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="右" />
-        </RadioGroup>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
-
-        <TextView
-            android:id="@+id/Disp_4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="年級："
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <RadioGroup
-            android:id="@+id/RadioButtonGroup_grades"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
-
-            <RadioButton
-                android:id="@+id/button_firstGrade"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="一" />
-
-            <RadioButton
-                android:id="@+id/button_secondGrade"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="二" />
-
-            <RadioButton
-                android:id="@+id/button_thirdGrade"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="三" />
-
-            <RadioButton
-                android:id="@+id/button_forthGrade"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="四" />
-
-            <RadioButton
-                android:id="@+id/button_fifthGrade"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="五" />
-
-            <RadioButton
-                android:id="@+id/button_sixthGrade"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="六" />
-        </RadioGroup>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
-
-        <TextView
-            android:id="@+id/Disp_5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="居住城市："
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <EditText
-            android:id="@+id/EditText_City"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
-
-        <TextView
-            android:id="@+id/Disp_6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="編號："
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:layout_marginRight="@dimen/fieldNameRightMargin"
+            android:text="編號"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/fieldTextSize" />
 
         <EditText
             android:id="@+id/Number_ID"
@@ -211,7 +257,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10"
-            android:inputType="number" />
+            android:inputType="number"
+            android:textSize="@dimen/fieldTextSize" />
+
     </LinearLayout>
 
 </LinearLayout>

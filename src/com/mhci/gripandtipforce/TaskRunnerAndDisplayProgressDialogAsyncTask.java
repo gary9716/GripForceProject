@@ -5,25 +5,29 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Handler;
 
-public class LoadActivityContentAsyncTask extends AsyncTask<Void, Integer, Void> {
-
+public class TaskRunnerAndDisplayProgressDialogAsyncTask extends AsyncTask<Void, Integer, Void> {
+	public final static String startAsyncTask = TaskRunnerAndDisplayProgressDialogAsyncTask.class.getName() + ".start";
+	public final static String stopAsyncTask = TaskRunnerAndDisplayProgressDialogAsyncTask.class.getName() + ".stop";
+	public final static String Key_title = "Title";
+	public final static String Key_msg = "Msg";
+	
 	private Context mContext = null;
 	private ProgressDialog progressDialog;
 	private Runnable mTaskToRunInBG;
 	private Runnable mPostTaskAfterBGTask;
-	private final static String defaultDialogTitle = "讀取中...";
-	private final static String defaultDialogMessage = "下一個畫面需要些讀取時間,請稍候";
+	private final static String defaultDialogTitle = "處理中...";
+	private final static String defaultDialogMessage = "系統忙碌中,請稍候";
 	private String userDefinedTitle = null;
 	private String userDefinedMsg = null;
 	
-	public LoadActivityContentAsyncTask(Context context,Runnable taskToRunInBG,Runnable postTaskAfterBGTask) {
+	public TaskRunnerAndDisplayProgressDialogAsyncTask(Context context,Runnable taskToRunInBG,Runnable postTaskAfterBGTask) {
 		// TODO Auto-generated constructor stub
 		mContext = context;
 		mTaskToRunInBG = taskToRunInBG;
 		mPostTaskAfterBGTask = postTaskAfterBGTask;	
 	}
 	
-	public LoadActivityContentAsyncTask(Context context,Runnable taskToRunInBG,Runnable postTaskAfterBGTask,String title,String msg) {
+	public TaskRunnerAndDisplayProgressDialogAsyncTask(Context context,Runnable taskToRunInBG,Runnable postTaskAfterBGTask,String title,String msg) {
 		// TODO Auto-generated constructor stub
 		mContext = context;
 		mTaskToRunInBG = taskToRunInBG;

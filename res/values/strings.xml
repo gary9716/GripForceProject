@@ -12,5 +12,9 @@
     <string name="spd" translatable="false">.spd</string>
     <string name="png" translatable="false">.png</string>
     <string name="Title" translatable="false">Title</string>
+    <string name="leftHand">左</string>
+    <string name="rightHand">右</string>
+    <string name="OneLine">一行</string>
+    <string name="SeparateChars">分開的格子</string>
 
 </resources>

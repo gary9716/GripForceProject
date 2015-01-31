@@ -1,6 +1,5 @@
 package com.mhci.gripandtipforce;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -28,7 +27,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class BluetoothSettingActivity extends Activity{
+public class BluetoothSettingActivity extends CustomizedBaseActivity{
 	public final static String debug_tag = BluetoothSettingActivity.class.getName();
 	
 	private final static String emptyStateName = "無";
@@ -82,8 +81,10 @@ public class BluetoothSettingActivity extends Activity{
 		
 		mBTManager = new BluetoothManager(mContext, null, null);
 		
-		mBTSettings = getSharedPreferences("BTSettings", Context.MODE_PRIVATE);
-		mLastSelectedBT.setText(mBTSettings.getString(ProjectConfig.Key_Preference_LastSelectedBT, emptyStateName));
+		mBTSettings = getSharedPreferences(ProjectConfig.Key_Preference_UserInfo, Context.MODE_PRIVATE);
+		if(mBTSettings != null) {
+			mLastSelectedBT.setText(mBTSettings.getString(ProjectConfig.Key_Preference_LastSelectedBT, emptyStateName));
+		}
 	}
 	
 	@Override
@@ -164,6 +165,7 @@ public class BluetoothSettingActivity extends Activity{
 	private void setBTNameAndAddress(String name, String addr) {
 		setBTName(name);
 		mCurrentSelectedBTAddress = addr;
+		Log.d(debug_tag,"current addr:" + addr);
 	}
 	
 	private void resetDataContainer() {
@@ -212,24 +214,40 @@ public class BluetoothSettingActivity extends Activity{
 			}
 			*/
 			else if(v.getId() == R.id.button_experiment_next_step) {
-				if(!canGoToNextPage()) {
-					Toast.makeText(mContext, "請重新選擇可用的藍芽", Toast.LENGTH_SHORT).show();
-					return;
-				}
+				// 1. Instantiate an AlertDialog.Builder with its constructor
+				AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+
+				// 2. Chain together various setter methods to set the dialog characteristics
+				builder.setMessage("確定選擇了正確的藍芽裝置嗎？\n如果選到錯誤的藍芽裝置將導致系統不正常反應");
+
+				// Add the buttons
+				builder.setPositiveButton("確定", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						if(!canGoToNextPage()) {
+							Toast.makeText(mContext, "請重新選擇可用的藍芽", Toast.LENGTH_SHORT).show();
+							return;
+						}
+						
+						if(mCurrentSelectedBTName != null && mCurrentSelectedBTAddress != null) { 
+							//save current selected BT and use this setting
+							Editor editor = mBTSettings.edit();
+							editor.putString(ProjectConfig.Key_Preference_LastSelectedBT, mCurrentSelectedBTName);
+							editor.putString(ProjectConfig.Key_Preference_CurrentSelectedBTAddress, mCurrentSelectedBTAddress);
+							editor.commit();	
+						}
+						//else use old setting
+						
+						Intent intent = new Intent(mContext, ExperimentActivity.class);
+						startActivity(intent);
+						
+					}
+				});
 				
-				if(mCurrentSelectedBTName != null && mCurrentSelectedBTAddress != null) { 
-					//save current selected BT and use this setting
-					Editor editor = mBTSettings.edit();
-					editor.putString(ProjectConfig.Key_Preference_LastSelectedBT, mCurrentSelectedBTName);
-					editor.putString(ProjectConfig.Key_Preference_CurrentSelectedBTAddress, mCurrentSelectedBTAddress);
-					editor.commit();	
-				}
-				//else use old setting
+				builder.setNegativeButton("還沒", null);
+
+				// 3. Get the AlertDialog from create()
+				(builder.create()).show();
 				
-				Intent intent = new Intent(mContext, ExperimentActivity.class);
-				startActivity(intent);
-				
-				//(new LoadActivityAsyncTask(mContext, ExperimentActivity.class)).execute();
 			}
 			
 		}
