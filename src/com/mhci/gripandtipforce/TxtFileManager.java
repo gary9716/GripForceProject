@@ -40,9 +40,9 @@ public class TxtFileManager extends FileManager{
 		super(context, dirInfo.getFileType());
 		readUserConfig();
 		
-		if(!FileDirInfo.isExternalStorageWritable()) {
-			Toast.makeText(context, "資料無法寫入指定資料夾,請再次確認設定無誤", Toast.LENGTH_LONG).show();
-		}
+//		if(!FileDirInfo.isExternalStorageWritable()) {
+//			Toast.makeText(context, "資料無法寫入指定資料夾,請再次確認設定無誤", Toast.LENGTH_LONG).show();
+//		}
 		
 		mContext = context;
 		mFileType = dirInfo.getFileType();
@@ -70,7 +70,7 @@ public class TxtFileManager extends FileManager{
 		try {
 			mFileDir = new File(dirInfo.getDirPath());
 			if(!mFileDir.exists()) {
-				if(!mFileDir.mkdir()) {
+				if(!mFileDir.mkdirs()) {
 					mFileDir = null;
 					Log.d(debug_tag, "mkdir failed in TxtFileManager");
 				}
@@ -119,9 +119,13 @@ public class TxtFileManager extends FileManager{
 	
 	public void appendLogWithNewlineSync(int arrayIndex, String data) {
 		// TODO Auto-generated method stub
+		BufferedWriter writer = writerArray[arrayIndex];
+		if(writer == null) {
+			return;
+		}
 		try {
-			writerArray[arrayIndex].write(data);
-			writerArray[arrayIndex].newLine();
+			writer.write(data);
+			writer.newLine();
 			//writerArray[arrayIndex].flush();
 		}
 		catch(Exception e) {
@@ -263,10 +267,10 @@ public class TxtFileManager extends FileManager{
 	
 	private String[] loadChineseCharsDependOnGrade(int grade) {
 		
-		if(!FileDirInfo.isExternalStorageReadable()) {
-			Toast.makeText(mContext, "無法讀取指定資料夾的範例文字,請再次確認設定無誤", Toast.LENGTH_LONG).show();
-			return null;
-		}
+//		if(!FileDirInfo.isExternalStorageReadable()) {
+//			Toast.makeText(mContext, "無法讀取指定資料夾的範例文字,請再次確認設定無誤", Toast.LENGTH_LONG).show();
+//			return null;
+//		}
 		
 		File exampleCharsFile = new File(ProjectConfig.exampleCharsFilesDirPath, ProjectConfig.exampleCharsFileName(grade));
 		
@@ -313,11 +317,15 @@ public class TxtFileManager extends FileManager{
 	}
 	
 	public static String getTipForceLogFileName(String userID, int grade, int charIndex) {
-		return ProjectConfig.tipForceLogPrefix + userID + "_" + grade + "_" + (charIndex + 1);
+		return ProjectConfig.tipForceLogPrefix + userID + "_" + grade + "_" + (charIndex + 1) + ProjectConfig.txtFileExtension;
 	}
 	
 	public static String getGripForceLogFileName(String userID) {
-		return ProjectConfig.gripForceLogPrefix + userID;
+		return ProjectConfig.gripForceLogPrefix + userID + ProjectConfig.txtFileExtension;
+	}
+	
+	public static String getPersonalInfoFileName(String userID) {
+		return userID + ProjectConfig.txtFileExtension;
 	}
 	
 	@Override

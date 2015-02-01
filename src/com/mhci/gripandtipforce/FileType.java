@@ -4,5 +4,6 @@ public enum FileType {
 	Log,
 	PersonalInfo,
 	Image,
+	ExampleChars,
 	numFileType
 };

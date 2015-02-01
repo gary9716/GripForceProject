@@ -23,5 +23,6 @@
 	<dimen name="fieldBottomMargin">10dp</dimen>
 	<dimen name="fieldTextSize">30sp</dimen>
 	<dimen name="radioButtonRightMargin">10dp</dimen>
-	
+	<dimen name="explanation_text_margin_left_and_right">20dp</dimen>
+	<dimen name="personalInfo_padding_left_and_right">30dp</dimen>
 </resources>

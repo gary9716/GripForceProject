@@ -17,6 +17,7 @@ public class UnderlinesStyledFragmentActivity extends CustomizedBaseFragmentActi
         if(getIntent().getBooleanExtra("EXIT", false)) {
         		showSystemBar();
         		finish();
+        		return;
         }
         
         ProjectConfig.initSomeVars(this); // some variables need to be init inside context

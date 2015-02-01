@@ -4,13 +4,19 @@ import com.jakewharton.viewpagerui.UnderlinesStyledFragmentActivity;
 import com.stericson.RootShell.execution.Command;
 import com.stericson.RootTools.RootTools;
 
+import android.R.integer;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.Toast;
 
 public class CustomizedBaseFragmentActivity extends FragmentActivity{
@@ -18,9 +24,16 @@ public class CustomizedBaseFragmentActivity extends FragmentActivity{
 	private boolean isSystemBarShown = true;
 	
 	@Override
+	protected void onCreate(Bundle arg0) {
+		// TODO Auto-generated method stub
+		super.onCreate(arg0);
+		getWindowManager().getDefaultDisplay().getMetrics(mMetrics);
+	}
+	
+	@Override
 	public void onBackPressed() {
 		// TODO Auto-generated method stub
-		Toast.makeText(this, "no back pressed allowed", Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, "此鍵已被暫時關閉，要離開請按右上角的選單", Toast.LENGTH_SHORT).show();
 	}
 
 
@@ -108,4 +121,17 @@ public class CustomizedBaseFragmentActivity extends FragmentActivity{
 			// something went wrong, deal with it here
 		}
 	}
+	
+	protected static DisplayMetrics mMetrics = new DisplayMetrics();
+	
+	protected int inchToDP(float inches) {
+		return Math.round(inches*mMetrics.xdpi);
+	}
+	
+	protected void setViewWidthAndHeightInInches(float inches, View v) {
+        int value = Math.round(inches*mMetrics.xdpi);
+		v.setLayoutParams(new LinearLayout.LayoutParams(value, value));
+        v.requestLayout();
+	}
+	
 }

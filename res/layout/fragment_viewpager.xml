@@ -9,9 +9,12 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
+        android:layout_marginLeft="@dimen/explanation_text_margin_left_and_right"
+        android:layout_marginRight="@dimen/explanation_text_margin_left_and_right"
         android:layout_marginTop="131dp"
+        android:gravity="center"
         android:text="Large Text"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:textSize="@dimen/bt_setting_text_size" />
 
     <Button
         android:id="@+id/startButton"
@@ -20,7 +23,9 @@
         android:layout_below="@+id/explanation_text"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="132dp"
+        android:padding="@dimen/button_padding"
         android:text="開始"
+        android:textSize="@dimen/bt_setting_text_size"
         android:visibility="gone" />
 
 </RelativeLayout>

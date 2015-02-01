@@ -27,7 +27,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class BluetoothSettingActivity extends CustomizedBaseActivity{
+public class BluetoothSettingActivity extends CustomizedBaseFragmentActivity{
 	public final static String debug_tag = BluetoothSettingActivity.class.getName();
 	
 	private final static String emptyStateName = "無";

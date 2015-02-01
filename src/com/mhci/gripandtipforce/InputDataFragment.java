@@ -1,6 +1,5 @@
 package com.mhci.gripandtipforce;
 
-import android.R.integer;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -12,10 +11,11 @@ import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class InputDataFragment extends Fragment {
-	
+	public final static String debug_tag = "inputDataFragment";
 	private final static int numFields = 7;
 	private Resources mRes = null;
 	private String packageName = null;
@@ -47,10 +47,12 @@ public class InputDataFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
+		Log.d(debug_tag,"onCreatView in " + debug_tag);
 		View fragmentView = inflater.inflate(R.layout.fragment_input_data, container, false);
-		
 		Resources res = getResources();
 		String fieldPrefix = "Disp_";
+		int paddingleftAndRight = (int)res.getDimension(R.dimen.personalInfo_padding_left_and_right);
+		fragmentView.setPadding(paddingleftAndRight, 0, paddingleftAndRight, 0);
 		
 		//find the largest width
 		int maxWidth = 0;
@@ -82,4 +84,5 @@ public class InputDataFragment extends Fragment {
 		updateIDView(fragmentView, userIDInNum + "");
 		return fragmentView;
 	}
+	
 }

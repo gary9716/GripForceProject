@@ -19,7 +19,7 @@
         android:id="@+id/input_data_fragment"
         android:name="com.mhci.gripandtipforce.InputDataFragment"
         android:layout_width="match_parent"
-        android:layout_height="700dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/imageView1" />
 
@@ -27,9 +27,9 @@
         android:id="@+id/button_complete_personal_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@id/input_data_fragment"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="70dp"
+        android:layout_marginTop="40dp"
         android:padding="@dimen/activity_horizontal_margin"
         android:text="下一步"
         android:textSize="@dimen/bt_setting_text_size" />

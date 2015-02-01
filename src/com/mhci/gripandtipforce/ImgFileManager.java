@@ -27,9 +27,9 @@ public class ImgFileManager extends FileManager{
 		//remain flexible for developer to do IO operation in another thread
 		readUserConfig();
 		
-		if(!FileDirInfo.isExternalStorageWritable()) {
-			Toast.makeText(context, "資料無法寫入指定資料夾,請再次確認設定無誤", Toast.LENGTH_LONG).show();
-		}
+//		if(!FileDirInfo.isExternalStorageWritable()) {
+//			Toast.makeText(context, "資料無法寫入指定資料夾,請再次確認設定無誤", Toast.LENGTH_LONG).show();
+//		}
 		
 		mContext = context;
 		initThreadAndHandler();
@@ -102,7 +102,7 @@ public class ImgFileManager extends FileManager{
 	}
 	
 	public static String getImgFileName(String userID,int grade,int charIndex) {
-		return userID + "_" + grade + "_" + (charIndex + 1);
+		return userID + "_" + grade + "_" + (charIndex + 1) + ProjectConfig.imgFileExtension;
 	}
 	
 }

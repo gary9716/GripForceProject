@@ -1,11 +1,13 @@
 package com.mhci.gripandtipforce;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 
-import android.R.integer;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -17,9 +19,11 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.os.Build;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -30,13 +34,8 @@ import android.util.Pair;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -56,13 +55,10 @@ import com.samsung.android.sdk.pen.engine.SpenTouchListener;
 import com.samsung.android.sdk.pen.pg.tool.SDKUtils;
 import com.samsung.android.sdk.pen.settingui.SpenSettingEraserLayout;
 import com.samsung.android.sdk.pen.settingui.SpenSettingPenLayout;
-import com.stericson.RootShell.execution.Command;
-import com.stericson.RootTools.RootTools;
-import com.jakewharton.viewpagerui.UnderlinesStyledFragmentActivity;
 import com.mhci.gripandtipforce.BluetoothClientConnectService.LocalBinder;
 import com.mhci.gripandtipforce.R;
 
-public class ExperimentActivity extends CustomizedBaseActivity {
+public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 
 	public final static String debug_tag = "Experiment";
 	
@@ -247,18 +243,18 @@ public class ExperimentActivity extends CustomizedBaseActivity {
 							//the test should be over now.
 							return;
 						}
-						if(btClientService != null) {
-							btClientService.setStoringDataEnabled(true);
-						}
+//						if(btClientService != null) {
+//							btClientService.setStoringDataEnabled(true);
+//						}
 						setContentView(mExperimentView); //switch to experiment view
 						
 						preOrPostInterfaceState = UIState.postExperimentTrial;
 					}
 					else if(preOrPostInterfaceState == UIState.postExperimentTrial) {
 						showPreExperimentView(mGrade);
-						if(btClientService != null) {
-							btClientService.setStoringDataEnabled(false);
-						}
+//						if(btClientService != null) {
+//							btClientService.setStoringDataEnabled(false);
+//						}
 						preOrPostInterfaceState = UIState.preExperimentTrial;
 					}
 				}
@@ -324,7 +320,7 @@ public class ExperimentActivity extends CustomizedBaseActivity {
 				// TODO Auto-generated method stub
 				if(event.getToolType(0) == MotionEvent.TOOL_TYPE_STYLUS && mPenBtn.isSelected() && mSurfaceView.isActivated()) {
 					//Log.d(debug_tag, event.getPressure() + "," + event.getX() + "," + event.getY() + "," + (System.currentTimeMillis() - fixedDateInMillis));
-					mPenTipInfo.setText("it's pen");
+					//mPenTipInfo.setText("it's pen");
 					stringBuffer.setLength(0); //clean buffer
 					stringBuffer.append(System.currentTimeMillis());
 					stringBuffer.append(delimiter);
@@ -399,9 +395,9 @@ public class ExperimentActivity extends CustomizedBaseActivity {
 					mExampleCharsTextView[i][j].setText(charsUsedForUpdate[charIndexToRetrieve]);
 				}
 				else {
-					Log.d(debug_tag, "deactivate char box");
-					mCharBoxes[i][j].setActivated(false); 
-					mCharBoxes[i][j].setToolTypeAction(SpenSurfaceView.TOOL_SPEN, SpenSurfaceView.ACTION_NONE); //cannot write here
+//					Log.d(debug_tag, "deactivate char box");
+//					mCharBoxes[i][j].setActivated(false); 
+//					mCharBoxes[i][j].setToolTypeAction(SpenSurfaceView.TOOL_SPEN, SpenSurfaceView.ACTION_NONE); //cannot write here
 				}
 			}
 		}
@@ -553,6 +549,7 @@ public class ExperimentActivity extends CustomizedBaseActivity {
 			// TODO Auto-generated method stub
 			LocalBinder binder = (LocalBinder)service;
 			btClientService = binder.getService();
+			btClientService.setStoringDataEnabled(true);
 			Log.d(debug_tag, "btService connected");
 		}
 	};
@@ -588,8 +585,10 @@ public class ExperimentActivity extends CustomizedBaseActivity {
 			
 			((RelativeLayout)mExperimentView.findViewById(R.id.spenViewContainer)).addView(charGroupsContainer);
 			
-			int charBoxWidth = (int)mRes.getDimension(R.dimen.char_box_width);
-			int charBoxHeight = (int)mRes.getDimension(R.dimen.char_box_height);
+//			int charBoxWidth = (int)mRes.getDimension(R.dimen.char_box_width);
+//			int charBoxHeight = (int)mRes.getDimension(R.dimen.char_box_height);
+			int charBoxHeight = inchToDP(ProjectConfig.inchPerCM * 2.1f);
+			int charBoxWidth = charBoxHeight;
 			int charBoxMarginLeftOrRight = (int)mRes.getDimension(R.dimen.char_box_left_or_right_margin);
 			int charBoxMarginBottom = (int)mRes.getDimension(R.dimen.char_box_bottom_margin);
 			
@@ -609,7 +608,8 @@ public class ExperimentActivity extends CustomizedBaseActivity {
 			);
 			
 			LinearLayout[] charGroups = new LinearLayout[numCharBoxesInAPage];
-			
+
+			Drawable bgDrawable = mRes.getDrawable(R.drawable.charbox_grid);
 			for(int i = 0;i < numWritableCharBoxCols;i++) {
 				for(int j = 0;j < numCharBoxesInCol;j++) {
 					int charBoxIndex = i * numCharBoxesInCol + j;
@@ -621,7 +621,7 @@ public class ExperimentActivity extends CustomizedBaseActivity {
 					TextView txtView = new TextView(mContext);
 					txtView.setTag(mExCharNames[charBoxIndex]);
 					txtView.setTextSize((int)mRes.getDimension(R.dimen.exChars_textSize));
-					txtView.setBackground(mRes.getDrawable(R.drawable.textview_border));
+					txtView.setBackground(bgDrawable);
 					txtView.setGravity(Gravity.CENTER);
 					txtLayoutParams.bottomMargin = charBoxMarginBottom;
 					mExampleCharsTextView[i][j] = txtView;
@@ -629,6 +629,7 @@ public class ExperimentActivity extends CustomizedBaseActivity {
 					RelativeLayout writableCharBox = new RelativeLayout(mContext);
 					writableCharBox.setTag(mWritableCharBoxNames[charBoxIndex]);
 					writableCharBox.setLayoutParams(rLayoutParams);
+					writableCharBox.setBackground(bgDrawable);
 					
 					if(mUserDominantHand.equals(ProjectConfig.leftHand)) {
 						txtLayoutParams.leftMargin = charBoxMarginLeftOrRight;
@@ -654,7 +655,9 @@ public class ExperimentActivity extends CustomizedBaseActivity {
 		public void run() {
 				// TODO Auto-generated method stub
 				/* ExperimentView */
-			
+				final String dirPath = mContext.getFilesDir().getPath();
+				Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.charbox_grid);
+	        
 				SharedPreferences userInfoPreference = mContext.getSharedPreferences(ProjectConfig.Key_Preference_UserInfo, Context.MODE_PRIVATE);
 	
 				if(userInfoPreference != null) {
@@ -762,25 +765,31 @@ public class ExperimentActivity extends CustomizedBaseActivity {
 					e.printStackTrace();
 					finish();
 				}
-
-				String imgFileName = null;
-
+				
+				String imgFileName = dirPath + "/charbox_bg.png";
+				saveBitmapToFileCache(bitmap, imgFileName);
+		        //String imgFileName = null;
+				
 				for(int i = 0;i < numWritableCharBoxCols;i++) {
 					for(int j = 0;j < numCharBoxesInCol;j++) {
 						// Add a Page to NoteDoc, get an instance, and set it to the member variable.
 
 						if(imgFileName != null) {
-							mSpenPageDocs[i][j] = mSpenNoteDoc.insertPage(i * numCharBoxesInCol + j, 0, imgFileName, SpenPageDoc.BACKGROUND_IMAGE_MODE_FIT);
+							//mSpenPageDocs[i][j] = mSpenNoteDoc.insertPage(i * numCharBoxesInCol + j, 0, imgFileName, SpenPageDoc.BACKGROUND_IMAGE_MODE_FIT);
+							mSpenPageDocs[i][j] = mSpenNoteDoc.insertPage(i * numCharBoxesInCol + j);
+							mSpenPageDocs[i][j].setBackgroundImage(imgFileName);
+							mSpenPageDocs[i][j].setBackgroundImageMode(SpenPageDoc.BACKGROUND_IMAGE_MODE_FIT);
+							
 						}
 						else {
 							mSpenPageDocs[i][j] = mSpenNoteDoc.insertPage(i * numCharBoxesInCol + j);
-							mSpenPageDocs[i][j].setBackgroundColor(0xFFD6E6F5);
+							mSpenPageDocs[i][j].setBackgroundColor(0x00FFFFFF);
 						}
 						mSpenPageDocs[i][j].clearHistory();
 
 					}
 				}
-
+				
 				uiThreadHandler.post(new Runnable() {
 
 					@Override
@@ -792,6 +801,8 @@ public class ExperimentActivity extends CustomizedBaseActivity {
 							for(int j = 0;j < numCharBoxesInCol;j++) {
 								mCharBoxes[i][j] = new SpenSurfaceView(mContext);   
 								SpenSurfaceView surfaceView = mCharBoxes[i][j];
+								//surfaceView.setVisibility(View.INVISIBLE);
+								
 								surfaceView.setActivated(true);
 								surfaceView.setClickable(true);
 								//to disable hover effect, just disable the hover effect in the system setting	
@@ -827,7 +838,37 @@ public class ExperimentActivity extends CustomizedBaseActivity {
 			}
 
 	}
+	
+	static public void saveBitmapToFileCache(Bitmap bitmap, String strFilePath) {
+        // Save images from resources as a file, which can be set as a background image.
+        File file = new File(strFilePath);
+        OutputStream out = null;
 
+        if (file.exists() == true) {
+            return;
+        }
+        try {
+            file.createNewFile();
+            out = new FileOutputStream(file);
+
+            if (strFilePath.endsWith(".jpg")) {
+                bitmap.compress(CompressFormat.JPEG, 100, out);
+            } else {
+                bitmap.compress(CompressFormat.PNG, 100, out);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+	
 	private void captureSpenSurfaceView(int row, int col, String fileName) {	
 		Bitmap imgBitmap = mCharBoxes[row][col].captureCurrentView(true);
 		imgFileManager.saveBMP(imgBitmap, fileName);

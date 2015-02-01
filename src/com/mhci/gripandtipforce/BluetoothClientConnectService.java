@@ -42,7 +42,7 @@ public class BluetoothClientConnectService extends Service{
 	
 	private final static long durationForWaitingConnectionToBeSetUp = 10000; //in milli secs
 	private final static int bufferSize = 300;
-	private final static int dataBodySize = ProjectConfig.numBytesPerSensorStrip*6;
+	private final static int dataBodySize = ProjectConfig.numBytesPerSensorStrip* ProjectConfig.numSensorStrips;
 	//private final static int numBytesPerSensorStrip = ProjectConfig.numBytesPerSensorStrip;
 	private final static int headerByte1 = 0x0D;
 	private final static int headerByte2 = 0x0A;
@@ -296,15 +296,13 @@ public class BluetoothClientConnectService extends Service{
 		
 		private void parsingDataAndStored(byte[] buffer) {
 			stringBuffer.setLength(0);
-			//stringBuffer.append((int)((buffer[0]) & 0xFF));
 			stringBuffer.append(System.currentTimeMillis());
-			stringBuffer.append(',');
 			int numBytesInBuffer = buffer.length;
 			for(int index = 0;index < numBytesInBuffer;index++) {
 				stringBuffer.append(',');
 				stringBuffer.append((int)((buffer[index]) & 0xFF));
 			}
-			Log.d(debug_tag,stringBuffer.toString());
+			//Log.d(debug_tag,stringBuffer.toString());
 			if(toStoreData) {
 				txtFileManager.appendLogWithNewlineSync(logFileIndex, stringBuffer.toString());
 			}
@@ -368,8 +366,8 @@ public class BluetoothClientConnectService extends Service{
 					updateUIBTState("正在嘗試連線");
 					getSocketAndConnect(false);
 					if(mSocket == null) {
-						updateUIBTState("連線失敗，3秒後重新連線");
-						delay(3000); //delay 3 sec
+						updateUIBTState("連線失敗，4秒後重新連線");
+						delay(4000); //delay 3 sec
 					}
 				}
 				else {

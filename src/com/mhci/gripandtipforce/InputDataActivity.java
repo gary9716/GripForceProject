@@ -5,8 +5,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -14,6 +16,7 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class InputDataActivity extends CustomizedBaseFragmentActivity {
 	
@@ -113,7 +116,7 @@ public class InputDataActivity extends CustomizedBaseFragmentActivity {
 						// User clicked OK button
 						//fresh buffered data
 						getUserInfo(fragmentView);
-						txtFileManager.createOrOpenLogFileSync(mUserID, fileIndex);
+						txtFileManager.createOrOpenLogFileSync(TxtFileManager.getPersonalInfoFileName(mUserID), fileIndex);
 						saveIntoPreference();
 						saveIntoFile(fragmentView);
 						txtFileManager.closeFile(fileIndex);
@@ -132,5 +135,18 @@ public class InputDataActivity extends CustomizedBaseFragmentActivity {
 		});
 		
 	}
+	/*
+	@Override
+	public boolean onKeyShortcut(int keyCode, KeyEvent event) {
+		// TODO Auto-generated method stub
+		Toast.makeText(this, keyCode + " " + event.toString(), Toast.LENGTH_SHORT).show();
+		return super.onKeyShortcut(keyCode, event);
+	}
 	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		// TODO Auto-generated method stub
+		super.onConfigurationChanged(newConfig);	
+	}
+	*/
 }
