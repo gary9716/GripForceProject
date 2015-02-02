@@ -11,31 +11,31 @@
 # Data Naming and Format:
 <ol> <li> For Grip Force Logs: </li>
 
-* Naming: GripForce_{UserID}.txt
+* Naming: GripForce_{UserID}.txt<br/>
 
-* Format:{timestamp in milliseconds since experiment view loaded},{sensor strip 1 data point 1},{sensor strip 1 data point 2}, ... {sensor strip 1 data point n},{sensor strip 2 data point 1} ... {sensor strip 2 data point n} ... {sensor strip m data point 1} ... {sensor strip m data point n}
+* Format:{timestamp in milliseconds since experiment view loaded},{sensor strip 1 data point 1},{sensor strip 1 data point 2}, ... {sensor strip 1 data point n},{sensor strip 2 data point 1} ... {sensor strip 2 data point n} ... {sensor strip m data point 1} ... {sensor strip m data point n}<br/>
 
-* Path: GripForce/Logs
+* Path: GripForce/Logs<br/>
 
 <li> For Tip Force Logs: </li>
 
-* Naming: TipForce_{UserID}_{Grade}_{The order of a character in a file}.txt
+* Naming: TipForce_{UserID}_{Grade}_{The order of a character in a file}.txt<br/>
 
-* Format:{timestamp in milliseconds since experiment view loaded},{x coordinate},{y coordinate},{samsung note compatiable pen tip force}
+* Format:{timestamp in milliseconds since experiment view loaded},{x coordinate},{y coordinate},{samsung note compatiable pen tip force}<br/>
 
-* Path: GripForce/Logs
+* Path: GripForce/Logs<br/>
 
 <li> Handwriting Images: </li>
 
-* Naming: {UserID}_{Grade}_{The order of a character in a file}.png
+* Naming: {UserID}_{Grade}_{The order of a character in a file}.png<br/>
 
-* Path: GripForce/Images
+* Path: GripForce/Images<br/>
 
 <li> User Personal Information: </li>
 
-* Naming: {UserID}.txt
+* Naming: {UserID}.txt<br/>
 
-* Path: GripForce/PersonalInformation
+* Path: GripForce/PersonalInformation<br/>
 
 </ol>
 # Testing Example Characters:
