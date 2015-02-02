@@ -16,7 +16,7 @@ public class ProjectConfig {
 	public final static String debug_tag = "ProjectConfig";
 	
 	public final static String projectName = "GripForce"; 
-	public final static boolean useSystemBarHideAndShow = true;
+	public static boolean useSystemBarHideAndShow = true;
 	public final static boolean useRealSDCard = true;
 	public static final int numBytesPerSensorStrip = 19;
 	public static final int numSensorStrips = 6;
@@ -189,11 +189,15 @@ public class ProjectConfig {
 	
 	public static ArrayList<Integer> getTestingGradeSequence(int grade) {
 		ArrayList<Integer> testingGrades = new ArrayList<Integer>();
-		for(int i = 0;i < grade;i++) {
-			testingGrades.add(Integer.valueOf(i+1));
+//		for(int i = 0;i < grade;i++) {
+//			testingGrades.add(Integer.valueOf(i+1));
+//		}
+		
+		for(int i = grade;i >= 1;i--) {
+			testingGrades.add(Integer.valueOf(i));
 		}
 		
-		Collections.shuffle(testingGrades);
+		//Collections.shuffle(testingGrades);
 		
 		return testingGrades;
 	}
@@ -234,5 +238,9 @@ public class ProjectConfig {
 		File tmpFile = File.createTempFile("tryToWrite", null, dir);
 		tmpFile.delete();
 	}
+	
+	public static long getTimestamp(long startingTime) {
+		return System.currentTimeMillis() - startingTime;
+	} 
 	
 }

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -17,17 +18,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.renderscript.Font;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.util.Pair;
@@ -132,7 +136,7 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 
 	private TaskRunnerAndDisplayProgressDialogAsyncTask asyncTaskStartedViaBroadcast = null;
 
-	private long fixedDateInMillis = 0;
+	private long startingTimestampInMillis = 0;
 	
 	private String[] cachedChars = null;
 	private Intent startBTClientServiceIntent = null;
@@ -152,7 +156,7 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 		
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(2015, Calendar.JANUARY, 1);
-		fixedDateInMillis = calendar.getTimeInMillis();
+		startingTimestampInMillis = calendar.getTimeInMillis();
 		
 		SharedPreferences preferences = getSharedPreferences(ProjectConfig.Key_Preference_ExperimentSetting, Context.MODE_PRIVATE);
 		if(preferences != null) {
@@ -204,7 +208,9 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 		//and use progress dialog to make user feel this app faster than before or at least knowing the state of current app.
 		(new TaskRunnerAndDisplayProgressDialogAsyncTask(mContext, new BeforeViewShownTask(mContext), null, "讀取中...", "下一個畫面需要些讀取時間,請稍候")).execute(); 
 	}
-
+	
+	
+	
 	private View.OnClickListener mBtnOnClickListener = new View.OnClickListener() {
 		private void setSPenToolActionWithAllCanvases(int toolAction) {
 
@@ -318,17 +324,20 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 		@Override
 			public boolean onTouch(View view, MotionEvent event) {
 				// TODO Auto-generated method stub
-				if(event.getToolType(0) == MotionEvent.TOOL_TYPE_STYLUS && mPenBtn.isSelected() && mSurfaceView.isActivated()) {
+				if(event.getToolType(0) == MotionEvent.TOOL_TYPE_STYLUS && mPenBtn.isSelected()) {
 					//Log.d(debug_tag, event.getPressure() + "," + event.getX() + "," + event.getY() + "," + (System.currentTimeMillis() - fixedDateInMillis));
 					//mPenTipInfo.setText("it's pen");
 					stringBuffer.setLength(0); //clean buffer
-					stringBuffer.append(System.currentTimeMillis());
+					stringBuffer.append(ProjectConfig.getTimestamp(startingTimestampInMillis));
 					stringBuffer.append(delimiter);
 					stringBuffer.append(event.getX());
 					stringBuffer.append(delimiter);
 					stringBuffer.append(event.getY());
 					stringBuffer.append(delimiter);
 					stringBuffer.append(event.getPressure());
+					//stringBuffer.append(Float.toString(event.getPressure()));
+					//stringBuffer.append(String.format("%s",event.getPressure()));
+					//stringBuffer.append(BigDecimal.valueOf(event.getPressure()).toString());
 					txtFileManager.appendLogWithNewlineSync(mCharboxIndex, stringBuffer.toString());
 				}
 				/*
@@ -550,6 +559,7 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 			LocalBinder binder = (LocalBinder)service;
 			btClientService = binder.getService();
 			btClientService.setStoringDataEnabled(true);
+			btClientService.setStartingTimestamp(startingTimestampInMillis);
 			Log.d(debug_tag, "btService connected");
 		}
 	};
@@ -608,8 +618,18 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 			);
 			
 			LinearLayout[] charGroups = new LinearLayout[numCharBoxesInAPage];
-
 			Drawable bgDrawable = mRes.getDrawable(R.drawable.charbox_grid);
+			Typeface font = null;
+			
+			try {
+				//Log.d("typeface", ProjectConfig.internalSDCardPath + "/" + ProjectConfig.projectName + "/" +"chinese_font1.ttf");
+				File fontFile = new File(ProjectConfig.internalSDCardPath + "/" + ProjectConfig.projectName + "/chinese_exp.ttf");
+				font = Typeface.createFromFile(fontFile);
+			}
+			catch(Exception e) {
+				Log.d("typeface", e.getLocalizedMessage());
+			}
+			
 			for(int i = 0;i < numWritableCharBoxCols;i++) {
 				for(int j = 0;j < numCharBoxesInCol;j++) {
 					int charBoxIndex = i * numCharBoxesInCol + j;
@@ -621,8 +641,12 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 					TextView txtView = new TextView(mContext);
 					txtView.setTag(mExCharNames[charBoxIndex]);
 					txtView.setTextSize((int)mRes.getDimension(R.dimen.exChars_textSize));
-					txtView.setBackground(bgDrawable);
+					if(font != null) {
+						txtView.setTypeface(font);
+					}
 					txtView.setGravity(Gravity.CENTER);
+					txtView.setTextColor(Color.BLACK);
+					txtView.setBackgroundColor(Color.WHITE);
 					txtLayoutParams.bottomMargin = charBoxMarginBottom;
 					mExampleCharsTextView[i][j] = txtView;
 					
@@ -655,11 +679,13 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 		public void run() {
 				// TODO Auto-generated method stub
 				/* ExperimentView */
-				final String dirPath = mContext.getFilesDir().getPath();
-				Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.charbox_grid);
-	        
+//				final String dirPath = mContext.getFilesDir().getPath();
+//				Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.charbox_grid);
+
+				startingTimestampInMillis = System.currentTimeMillis();
+				
 				SharedPreferences userInfoPreference = mContext.getSharedPreferences(ProjectConfig.Key_Preference_UserInfo, Context.MODE_PRIVATE);
-	
+				
 				if(userInfoPreference != null) {
 					mUserGrade = (int)userInfoPreference.getLong(ProjectConfig.Key_Preference_UserGrade, 1);
 					mUserDominantHand = userInfoPreference.getString(ProjectConfig.Key_Preference_UserDominantHand, ProjectConfig.rightHand);
@@ -670,7 +696,6 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 					Log.d(debug_tag,"bt addr:" + userInfoPreference.getString(ProjectConfig.Key_Preference_CurrentSelectedBTAddress, null));
 					bindService(startBTClientServiceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
 				}
-
 			
 				mExperimentView = inflater.inflate(R.layout.activity_experiment_3, null);
 
@@ -766,9 +791,9 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 					finish();
 				}
 				
-				String imgFileName = dirPath + "/charbox_bg.png";
-				saveBitmapToFileCache(bitmap, imgFileName);
-		        //String imgFileName = null;
+				//String imgFileName = dirPath + "/charbox_bg.png";
+				//saveBitmapToFileCache(bitmap, imgFileName);
+		        String imgFileName = null;
 				
 				for(int i = 0;i < numWritableCharBoxCols;i++) {
 					for(int j = 0;j < numCharBoxesInCol;j++) {
@@ -778,12 +803,11 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 							//mSpenPageDocs[i][j] = mSpenNoteDoc.insertPage(i * numCharBoxesInCol + j, 0, imgFileName, SpenPageDoc.BACKGROUND_IMAGE_MODE_FIT);
 							mSpenPageDocs[i][j] = mSpenNoteDoc.insertPage(i * numCharBoxesInCol + j);
 							mSpenPageDocs[i][j].setBackgroundImage(imgFileName);
-							mSpenPageDocs[i][j].setBackgroundImageMode(SpenPageDoc.BACKGROUND_IMAGE_MODE_FIT);
-							
+							mSpenPageDocs[i][j].setBackgroundImageMode(SpenPageDoc.BACKGROUND_IMAGE_MODE_FIT);	
 						}
 						else {
 							mSpenPageDocs[i][j] = mSpenNoteDoc.insertPage(i * numCharBoxesInCol + j);
-							mSpenPageDocs[i][j].setBackgroundColor(0x00FFFFFF);
+							mSpenPageDocs[i][j].setBackgroundColor(Color.WHITE);
 						}
 						mSpenPageDocs[i][j].clearHistory();
 

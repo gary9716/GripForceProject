@@ -18,7 +18,7 @@
 	<dimen name="normal_text_size">40sp</dimen>
 	<dimen name="char_box_left_or_right_margin">100dp</dimen>
 	<dimen name="charGroupsMarginLeftOrRight">130dp</dimen>
-	<dimen name="exChars_textSize">50sp</dimen>
+	<dimen name="exChars_textSize">90sp</dimen>
 	<dimen name="fieldNameRightMargin">10dp</dimen>
 	<dimen name="fieldBottomMargin">10dp</dimen>
 	<dimen name="fieldTextSize">30sp</dimen>

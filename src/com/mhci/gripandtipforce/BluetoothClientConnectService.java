@@ -60,10 +60,16 @@ public class BluetoothClientConnectService extends Service{
 	private TxtFileManager txtFileManager = null;
 	private String mUserID = ProjectConfig.defaultUserID;
 	private final int logFileIndex = 0;
+	private long startingTimestamp = 0;
+	
 	
 	//API for Bounded Service
 	public void setStoringDataEnabled(boolean enable) {
 		toStoreData = enable;
+	}
+	
+	public void setStartingTimestamp(long timestamp) {
+		startingTimestamp = timestamp;
 	}
 	
 	@Override
@@ -296,7 +302,7 @@ public class BluetoothClientConnectService extends Service{
 		
 		private void parsingDataAndStored(byte[] buffer) {
 			stringBuffer.setLength(0);
-			stringBuffer.append(System.currentTimeMillis());
+			stringBuffer.append(ProjectConfig.getTimestamp(startingTimestamp));
 			int numBytesInBuffer = buffer.length;
 			for(int index = 0;index < numBytesInBuffer;index++) {
 				stringBuffer.append(',');

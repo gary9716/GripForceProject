@@ -106,10 +106,12 @@ public class CustomizedBaseFragmentActivity extends FragmentActivity{
 			String commandStr = "service call activity " + 
 				ProcID + " s16 com.android.systemui";
 			runAsRoot(commandStr);
+			isSystemBarShown = false;
 		} catch (Exception e) {
 			// something went wrong, deal with it here
+			ProjectConfig.useSystemBarHideAndShow = false; //disable this feature
 		}
-		isSystemBarShown = false;
+		
 	}
 
 
@@ -119,6 +121,7 @@ public class CustomizedBaseFragmentActivity extends FragmentActivity{
 			RootTools.getShell(true).add(command);
 		} catch (Exception e) {
 			// something went wrong, deal with it here
+			ProjectConfig.useSystemBarHideAndShow = false; //disable this feature
 		}
 	}
 	

@@ -56,7 +56,8 @@
     <RelativeLayout
         android:id="@+id/spenViewContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent"
+        android:background="@color/blue_color" >
 
         <RelativeLayout
             android:id="@+id/debug_layer"
@@ -87,7 +88,8 @@
             android:layout_marginRight="49dp"
             android:layout_marginTop="29dp"
             android:text="Large Text"
-            android:textAppearance="?android:attr/textAppearanceLarge"/>
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@color/default_color" />
 
     </RelativeLayout>
 
