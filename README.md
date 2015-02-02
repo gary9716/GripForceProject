@@ -12,39 +12,41 @@ the app will try to search the Removable SD Card first. if not existed, it will 
 
 1. For Grip Force Logs:
 
-Naming: GripForce_<UserID>.txt
+Naming: GripForce_[UserID].txt
 
-Format:<timestamp in milliseconds since experiment view loaded>,<sensor strip 1 data point 1>,<sensor strip 1 data point 2>, ... <sensor strip 1 data point n>,<sensor strip 2 data point 1> ... <sensor strip 2 data point n> ... <sensor strip m data point 1> ... <sensor strip m data point n>
+Format:[timestamp in milliseconds since experiment view loaded],[sensor strip 1 data point 1],[sensor strip 1 data point 2], ... [sensor strip 1 data point n],[sensor strip 2 data point 1] ... [sensor strip 2 data point n] ... [sensor strip m data point 1] ... [sensor strip m data point n]
 
 Path: GripForce/Logs
 
 2. For Tip Force Logs:
 
-Naming: TipForce_<UserID>_<Grade>_<The order of a character in a file>.txt
+Naming: TipForce_[UserID]_[Grade]_[The order of a character in a file].txt
 
-Format:<timestamp in milliseconds since experiment view loaded>,<x coordinate>,<y coordinate>,<samsung note compatiable pen tip force>
+Format:[timestamp in milliseconds since experiment view loaded],[x coordinate],[y coordinate],[samsung note compatiable pen tip force]
 
 Path: GripForce/Logs
 
 3. Handwriting Images:
 
-Naming: <UserID>_<Grade>_<The order of a character in a file>.png
+Naming: [UserID]_[Grade]_[The order of a character in a file].png
 
 Path: GripForce/Images
 
 4. User Personal Information:
 
-Naming: <UserID>.txt
+Naming: [UserID].txt
 
 Path: GripForce/PersonalInformation
 
 # Testing Example Characters:
 
-Naming: Grade_<the grade>_Characters.txt
+Naming: Grade_[Grade]_Characters.txt
+
+ex: Grade_1_Characters.txt means first grade
 
 Encoding: UTF-8
 
-Format: <Field Name> : <Field data>
+Format: [Field Name] : [Field data]
 
 Path: GripForce/Example_Characters
 
@@ -54,7 +56,7 @@ Chinese Characters Font:
 
 The font of Chinese Example Characters in experiment page can be changed.
 
-Just put the font file(.ttf) under the path <System SD Card Path>/GripForce/ and renamed as "chinese_exp.ttf".
+Just put the font file(.ttf) under the path [System SD Card Path]/GripForce/ and renamed as "chinese_exp.ttf".
 
 If you wish to use otf file , please refer to the file named ExperimentActivity.java and search "Typeface" modify 
 
@@ -69,5 +71,5 @@ the code and compile for your own purpose.
 # Set up this project:(For Developers)
 
 you will need to add "libraryProject" under the root path of this project as a library project in order to successfully compile this project.
- 
+
 
