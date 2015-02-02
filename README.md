@@ -19,7 +19,7 @@
 
 <li> For Tip Force Logs: </li>
 
-* Naming: TipForce\_{UserID}\_{Grade}\_{The order of a character in a file}.txt
+* Naming: TipForce_{UserID}_{Grade}_{The order of a character in a file}.txt
 
 * Format:{timestamp in milliseconds since experiment view loaded},{x coordinate},{y coordinate},{samsung note compatiable pen tip force}
 
@@ -27,7 +27,7 @@
 
 <li> Handwriting Images: </li>
 
-* Naming: {UserID}\_{Grade}\_{The order of a character in a file}.png
+* Naming: {UserID}_{Grade}_{The order of a character in a file}.png
 
 * Path: GripForce/Images
 
