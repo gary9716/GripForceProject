@@ -1,4 +1,3 @@
-
 # Project Data:
 
 * all data will be placed under the Project Folder(named GripForce) which is located under the root of sdcard folder. 
@@ -10,8 +9,7 @@
 * the app will try to search the Removable SD Card first. if not existed, it will use System SD Card.
 
 # Data Naming and Format:
-
-1. For Grip Force Logs:
+<ol> <li> For Grip Force Logs: </li>
 
 * Naming: GripForce_{UserID}.txt
 
@@ -19,7 +17,7 @@
 
 * Path: GripForce/Logs
 
-2. For Tip Force Logs:
+<li> For Tip Force Logs: </li>
 
 * Naming: TipForce\_{UserID}\_{Grade}\_{The order of a character in a file}.txt
 
@@ -27,18 +25,19 @@
 
 * Path: GripForce/Logs
 
-3. Handwriting Images:
+<li> Handwriting Images: </li>
 
 * Naming: {UserID}\_{Grade}\_{The order of a character in a file}.png
 
 * Path: GripForce/Images
 
-4. User Personal Information:
+<li> User Personal Information: </li>
 
 * Naming: {UserID}.txt
 
 * Path: GripForce/PersonalInformation
 
+</ol>
 # Testing Example Characters:
 
 * Naming: Grade_{Grade}_Characters.txt
