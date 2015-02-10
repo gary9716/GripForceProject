@@ -13,7 +13,11 @@
 
 * Naming: GripForce_{UserID}.txt<br/>
 
-* Format:{timestamp in milliseconds since experiment view loaded},{sensor strip 1 data point 1},{sensor strip 1 data point 2}, ... {sensor strip 1 data point n},{sensor strip 2 data point 1} ... {sensor strip 2 data point n} ... {sensor strip m data point 1} ... {sensor strip m data point n}<br/>
+* Format:
+{timestamp in milliseconds since experiment view loaded},{sensor strip 1 data point 1},{sensor strip 1 data point 2}, ... {sensor strip 1 data point n}\n
+{timestamp in milliseconds since experiment view loaded},{sensor strip 2 data point 1} ... {sensor strip 2 data point n}\n
+ ... 
+{timestamp in milliseconds since experiment view loaded},{sensor strip m data point 1} ... {sensor strip m data point n}\n<br/>
 
 * Path: GripForce/Logs<br/>
 
