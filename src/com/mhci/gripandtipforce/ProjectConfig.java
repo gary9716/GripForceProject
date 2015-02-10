@@ -243,4 +243,25 @@ public class ProjectConfig {
 		return System.currentTimeMillis() - startingTime;
 	} 
 	
+	public static String getImgFileName(String userID,int grade,int charIndex) {
+		return userID + "_" + grade + "_" + (charIndex + 1) + imgFileExtension;
+	}
+	
+
+	public static String getTipForceLogFileName(String userID, int grade, int charIndex) {
+		return tipForceLogPrefix + userID + "_" + grade + "_" + (charIndex + 1) + txtFileExtension;
+	}
+	
+	public static String getGripForceLogFileName(String userID) {
+		return gripForceLogPrefix + userID + txtFileExtension;
+	}
+	
+	public static String getPersonalInfoFileName(String userID) {
+		return userID + txtFileExtension;
+	}
+	
+	public static String getDirpathByID(String userID) {
+		return getRootDirPath() + "/" + projectName + "/" + userID;
+	}
+	
 }

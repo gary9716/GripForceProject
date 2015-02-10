@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.R.integer;
 import android.app.Service;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -42,7 +43,8 @@ public class BluetoothClientConnectService extends Service{
 	
 	private final static long durationForWaitingConnectionToBeSetUp = 10000; //in milli secs
 	private final static int bufferSize = 300;
-	private final static int dataBodySize = ProjectConfig.numBytesPerSensorStrip* ProjectConfig.numSensorStrips;
+	private final static int totalNumDataPoints = ProjectConfig.numBytesPerSensorStrip * ProjectConfig.numSensorStrips;
+	private final static int dataBodySize = bufferSize > totalNumDataPoints ? totalNumDataPoints : bufferSize;
 	//private final static int numBytesPerSensorStrip = ProjectConfig.numBytesPerSensorStrip;
 	private final static int headerByte1 = 0x0D;
 	private final static int headerByte2 = 0x0A;
@@ -81,13 +83,13 @@ public class BluetoothClientConnectService extends Service{
 		toTerminateConnection = false;
 		mLBCManager = LocalBroadcastManager.getInstance(this);
 		mBTManager = new BluetoothManager(this, null, null);
-		FileDirInfo dirInfo = new FileDirInfo(FileType.Log, null, null);
-		txtFileManager = new TxtFileManager(dirInfo, this);
 		SharedPreferences preferences = this.getSharedPreferences(ProjectConfig.Key_Preference_UserInfo, Context.MODE_PRIVATE);
 		if(preferences != null) {
 			mUserID = preferences.getString(ProjectConfig.Key_Preference_UserID, ProjectConfig.defaultUserID);
 		}
 		
+		FileDirInfo dirInfo = new FileDirInfo(FileType.Log, ProjectConfig.getDirpathByID(mUserID), null);
+		txtFileManager = new TxtFileManager(dirInfo, this);
 	}
 	
 	private BluetoothDevice getBTDevice(Intent intent) {
@@ -181,7 +183,7 @@ public class BluetoothClientConnectService extends Service{
 				action.putExtra(TaskRunnerAndDisplayProgressDialogAsyncTask.Key_msg, "正在開啟藍芽Log檔案,請稍候");
 				mLBCManager.sendBroadcast(action);
 				
-				txtFileManager.createOrOpenLogFileSync(TxtFileManager.getGripForceLogFileName(mUserID), logFileIndex);
+				txtFileManager.createOrOpenLogFileSync(ProjectConfig.getGripForceLogFileName(mUserID), logFileIndex);
 				
 				action.setAction(TaskRunnerAndDisplayProgressDialogAsyncTask.stopAsyncTask);
 				mLBCManager.sendBroadcast(action);
@@ -247,7 +249,9 @@ public class BluetoothClientConnectService extends Service{
 				return;
 			}
 			
-			mSocket = mDevice.createInsecureRfcommSocketToServiceRecord(ProjectConfig.UUIDForBT);
+			mBTManager.stopDiscovering();
+			
+			mSocket = mDevice.createRfcommSocketToServiceRecord(ProjectConfig.UUIDForBT);
 			//mSocket = mDevice.createRfcommSocketToServiceRecord(ProjectConfig.UUIDForBT);
 			if(testConnection) {
 				//schedule a timer task because connect is a blocking IO operation. Use close to abort this function.
@@ -302,13 +306,20 @@ public class BluetoothClientConnectService extends Service{
 		
 		private void parsingDataAndStored(byte[] buffer) {
 			stringBuffer.setLength(0);
-			stringBuffer.append(ProjectConfig.getTimestamp(startingTimestamp));
-			int numBytesInBuffer = buffer.length;
-			for(int index = 0;index < numBytesInBuffer;index++) {
-				stringBuffer.append(',');
-				stringBuffer.append((int)((buffer[index]) & 0xFF));
+			
+			int numStrips = ProjectConfig.numSensorStrips;
+			int numBytesInOneSensorStrip = ProjectConfig.numBytesPerSensorStrip;
+			long timestampToLog = ProjectConfig.getTimestamp(startingTimestamp);
+			
+			for(int sensorStripIndex = 0;sensorStripIndex < numStrips;sensorStripIndex++) {
+				stringBuffer.append(timestampToLog);
+				for(int sensorDataIndex = 0;sensorDataIndex < numBytesInOneSensorStrip;sensorDataIndex++) {
+					stringBuffer.append(',');
+					stringBuffer.append((int)((buffer[sensorStripIndex*numBytesInOneSensorStrip +  sensorDataIndex]) & 0xFF));
+				}
+				stringBuffer.append('\n');
 			}
-			//Log.d(debug_tag,stringBuffer.toString());
+			
 			if(toStoreData) {
 				txtFileManager.appendLogWithNewlineSync(logFileIndex, stringBuffer.toString());
 			}
@@ -325,7 +336,7 @@ public class BluetoothClientConnectService extends Service{
 		
 		private void startReceivingData() {
 			try {
-				txtFileManager.createOrOpenLogFileSync(TxtFileManager.getGripForceLogFileName(mUserID), logFileIndex);
+				txtFileManager.createOrOpenLogFileSync(ProjectConfig.getGripForceLogFileName(mUserID), logFileIndex);
 				InputStream inStream = mSocket.getInputStream();
 				while(true) {
 					if(inStream.read() == headerByte1 && inStream.read() == headerByte2) { //the body of data is behind header
@@ -372,8 +383,8 @@ public class BluetoothClientConnectService extends Service{
 					updateUIBTState("正在嘗試連線");
 					getSocketAndConnect(false);
 					if(mSocket == null) {
-						updateUIBTState("連線失敗，4秒後重新連線");
-						delay(4000); //delay 3 sec
+						updateUIBTState("連線失敗，1秒後重新連線");
+						delay(1000); //delay 1 sec
 					}
 				}
 				else {

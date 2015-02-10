@@ -34,12 +34,6 @@ public class ImgFileManager extends FileManager{
 		mContext = context;
 		initThreadAndHandler();
 		imgDir = new File(dirInfo.getDirPath());
-		if (!imgDir.exists()) {
-			if (!imgDir.mkdirs()) {
-				Toast.makeText(mContext, "Save Path Creation Error", Toast.LENGTH_SHORT).show();
-				return;
-			}
-		}
 	}
 	
 	private HandlerThread mThread = null;
@@ -101,8 +95,6 @@ public class ImgFileManager extends FileManager{
 		
 	}
 	
-	public static String getImgFileName(String userID,int grade,int charIndex) {
-		return userID + "_" + grade + "_" + (charIndex + 1) + ProjectConfig.imgFileExtension;
-	}
+	
 	
 }

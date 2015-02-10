@@ -54,8 +54,6 @@
         
         <service
        		android:name="com.mhci.gripandtipforce.BluetoothClientConnectService"/>
-        <service
-            android:name="com.mhci.gripandtipforce.LoadActivityService"/>
         
     </application>
 

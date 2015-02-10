@@ -1,11 +1,16 @@
 package com.mhci.gripandtipforce;
 
+import java.io.File;
+
+import android.util.Log;
+
 
 public class FileDirInfo {
 	private FileType mFileType = FileType.Log;
 	public static String[] _defaultDirPath = null;
 	private String mDirPath;
 	private String mOtherInfo;
+	private final static String debug_tag = FileDirInfo.class.getName();
 	
 	public FileDirInfo(FileType fileType, String dirPath, String otherInfo) {
 		
@@ -16,6 +21,17 @@ public class FileDirInfo {
 		}
 		else {
 			mDirPath = dirPath;
+		}
+		
+		//test existence, if not existed, try to create the whole path
+		try {
+			File dir = new File(mDirPath);
+			if(!dir.exists()) {
+				dir.mkdirs(); //make the whole path, including parent directory
+			}
+		}
+		catch(Exception e) {
+			Log.d(debug_tag, e.getLocalizedMessage());
 		}
 		
 	}

@@ -66,20 +66,8 @@ public class TxtFileManager extends FileManager{
 		}
 		
 		initArray(writerArray);
+		mFileDir = new File(dirInfo.getDirPath());
 		
-		try {
-			mFileDir = new File(dirInfo.getDirPath());
-			if(!mFileDir.exists()) {
-				if(!mFileDir.mkdirs()) {
-					mFileDir = null;
-					Log.d(debug_tag, "mkdir failed in TxtFileManager");
-				}
-			}
-		}
-		catch(Exception e) {
-			mFileDir = null;
-			Log.d(DEBUG_TAG, e.getLocalizedMessage());
-		}
 	}
 	
 	private BufferedWriter createOrOpenTxtFile(String fileName) {
@@ -314,18 +302,6 @@ public class TxtFileManager extends FileManager{
 		String[] buffer = new String[container.size()];
 		//Log.d(debug_tag,"numCharsHaveBeenLoaded:" + buffer.length + ",grade:" + grade);
 		return container.toArray(buffer);
-	}
-	
-	public static String getTipForceLogFileName(String userID, int grade, int charIndex) {
-		return ProjectConfig.tipForceLogPrefix + userID + "_" + grade + "_" + (charIndex + 1) + ProjectConfig.txtFileExtension;
-	}
-	
-	public static String getGripForceLogFileName(String userID) {
-		return ProjectConfig.gripForceLogPrefix + userID + ProjectConfig.txtFileExtension;
-	}
-	
-	public static String getPersonalInfoFileName(String userID) {
-		return userID + ProjectConfig.txtFileExtension;
 	}
 	
 	@Override

@@ -4,10 +4,12 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,7 +31,8 @@ public class InputDataActivity extends CustomizedBaseFragmentActivity {
 	private String mDominant_hand;
 	private long mUserGrade;
 	private String mLivingCity;
-	private String mUserID;
+	private String mUserID = null;
+	private SharedPreferences preferences = null;
 	
 	private String getCheckedRadioButtonText(View fragmentView, int radioGroupId) {
 		return ((RadioButton)fragmentView.findViewById(((RadioGroup)fragmentView.findViewById(radioGroupId)).getCheckedRadioButtonId())).getText().toString();
@@ -48,6 +51,9 @@ public class InputDataActivity extends CustomizedBaseFragmentActivity {
 		mUserGrade = Long.valueOf(getCheckedRadioButtonText(fragmentView, R.id.RadioGroup_grades));
 		mLivingCity = ((EditText)fragmentView.findViewById(R.id.EditText_City)).getText().toString();
 		mUserID = ((EditText)fragmentView.findViewById(R.id.Number_ID)).getText().toString();
+		if(strIsEmptyOrNull(mUserID)) {
+			mUserID = preferences.getString(ProjectConfig.Key_Preference_UserID, ProjectConfig.defaultUserID);
+		}
 		dataIsComplete = !strIsEmptyOrNull(mName) && 
 						 !strIsEmptyOrNull(mBirthday) &&
 						 !strIsEmptyOrNull(mLivingCity);
@@ -87,10 +93,9 @@ public class InputDataActivity extends CustomizedBaseFragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_inputdata);
 		Button confirmButton = (Button)findViewById(R.id.button_complete_personal_info);
-		FileDirInfo dirInfo = new FileDirInfo(FileType.PersonalInfo, null, null);
-		txtFileManager = new TxtFileManager(dirInfo, this);
 		final View fragmentView = findViewById(R.id.input_data_fragment);
 		final Context mContext = this;
+		preferences = getSharedPreferences(ProjectConfig.Key_Preference_UserInfo, Context.MODE_PRIVATE);
 		confirmButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -116,7 +121,9 @@ public class InputDataActivity extends CustomizedBaseFragmentActivity {
 						// User clicked OK button
 						//fresh buffered data
 						getUserInfo(fragmentView);
-						txtFileManager.createOrOpenLogFileSync(TxtFileManager.getPersonalInfoFileName(mUserID), fileIndex);
+						FileDirInfo dirInfo = new FileDirInfo(FileType.PersonalInfo, ProjectConfig.getDirpathByID(mUserID), null);
+						txtFileManager = new TxtFileManager(dirInfo, mContext);
+						txtFileManager.createOrOpenLogFileSync(ProjectConfig.getPersonalInfoFileName(mUserID), fileIndex);
 						saveIntoPreference();
 						saveIntoFile(fragmentView);
 						txtFileManager.closeFile(fileIndex);

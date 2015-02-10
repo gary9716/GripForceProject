@@ -79,8 +79,8 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 	private ImageView mPenBtn;
 	private ImageView mEraserBtn;
 	private ImageView mCleanBtn;
-	private ImageView mNextPageBtn;
-
+	//private ImageView mNextPageBtn;
+	private RelativeLayout mNextPageBtn;
 	private TextView mPenTipInfo = null;
 
 	private int mToolType = SpenSurfaceView.TOOL_SPEN;
@@ -426,7 +426,7 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 		int numImagesSaved = 0;
 		for(int i = 0;i < numWritableCharBoxCols && numImagesSaved < numImagesToSave;i++) {
 			for(int j = 0;j < numCharBoxesInCol && numImagesSaved < numImagesToSave;j++) {
-				captureSpenSurfaceView(i, j, ImgFileManager.getImgFileName(mUserID, mGrade, charIndex + numImagesSaved));
+				captureSpenSurfaceView(i, j, ProjectConfig.getImgFileName(mUserID, mGrade, charIndex + numImagesSaved));
 				numImagesSaved++;
 			}
 		}
@@ -523,7 +523,7 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 			}
 			for(int i = 0;i < numLogsToLoad;i++) {
 				txtFileManager.createOrOpenLogFileSync(
-						TxtFileManager.getTipForceLogFileName(mUserID, mGrade, mCharIndex + i), 
+						ProjectConfig.getTipForceLogFileName(mUserID, mGrade, mCharIndex + i), 
 						mCharBoxIndex + i);
 			}
 		}
@@ -699,9 +699,9 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 			
 				mExperimentView = inflater.inflate(R.layout.activity_experiment_3, null);
 
-				FileDirInfo dirInfo = new FileDirInfo(FileType.Image, null, null);
+				FileDirInfo dirInfo = new FileDirInfo(FileType.Image, ProjectConfig.getDirpathByID(mUserID), null);
 				imgFileManager = new ImgFileManager(dirInfo, mContext);
-				dirInfo.setFileType(FileType.Log, true);
+				dirInfo.setFileType(FileType.Log, false);
 				//the rest of space is used for preloading
 				dirInfo.setOtherInfo(String.valueOf(numCharBoxesInCol * numWritableCharBoxCols * 2));
 				txtFileManager = new TxtFileManager(dirInfo, mContext);
@@ -718,7 +718,7 @@ public class ExperimentActivity extends CustomizedBaseFragmentActivity {
 				mCleanBtn = (ImageView) mExperimentView.findViewById(R.id.cleanBtn);
 				mCleanBtn.setOnClickListener(mBtnOnClickListener);
 
-				mNextPageBtn = (ImageView) mExperimentView.findViewById(R.id.nextPageBtn);
+				mNextPageBtn = (RelativeLayout) mExperimentView.findViewById(R.id.nextPageBtn);
 				mNextPageBtn.setOnClickListener(mBtnOnClickListener);
 				
 				charboxesLayoutArrangement();
